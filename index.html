@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate (Pack 3)</title>
+    <title>Juegos Parejas Ultimate (Final)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -38,10 +38,10 @@
         @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
         /* JUEGO CATEGORÍAS */
-        .cat-display { font-size: 24px; font-weight: bold; color: #34d399; margin: 20px 0; padding: 20px; border: 2px dashed #34d399; border-radius: 15px; }
-        .countdown { font-size: 80px; font-weight: 900; color: #facc15; animation: zoom 1s infinite; }
-        @keyframes zoom { 0% { transform: scale(1); opacity:1; } 100% { transform: scale(1.5); opacity:0; } }
-        .word-reveal { font-size: 28px; font-weight: bold; margin: 10px 0; padding: 10px; background: #333; border-radius: 10px; }
+        .cat-display { font-size: 22px; font-weight: bold; color: #34d399; margin: 10px 0; padding: 15px; border: 2px dashed #34d399; border-radius: 15px; background: #064e3b; }
+        .timer-circle { width: 80px; height: 80px; border-radius: 50%; background: #333; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; color: white; border: 4px solid #34d399; }
+        .timer-danger { border-color: #ef4444; color: #ef4444; animation: pulse 0.2s infinite; }
+        .word-reveal { font-size: 24px; font-weight: bold; margin: 10px 0; padding: 10px; background: #333; border-radius: 10px; }
         
         /* DIAL Styles */
         .dial-main-container { position: relative; width: 300px; height: 160px; margin: 20px auto; }
@@ -85,9 +85,26 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // DATOS
-        const DIAL_TOPICS = [["Frío","Caliente"],["Feo","Guapo"],["Barato","Caro"],["Inútil","Útil"],["Aburrido","Divertido"],["Seco","Mojado"],["Fácil","Difícil"],["Odiado","Amado"],["Basura","Tesoro"],["Blando","Duro"],["Sano","Insalubre"],["Legal","Ilegal"],["Poco ético","Ético"],["Placer","Dolor"],["Cierto","Falso"],["Normal","Raro"],["Talento","Habilidad"],["Ciencia","Fantasía"],["Temporal","Eterno"],["Local","Global"],["Ruidoso","Silencioso"],["Picante","Dulce"],["Trabajo","Hobby"],["Peligroso","Seguro"],["Oscuro","Luminoso"],["Retro","Moderno"],["Niño","Adulto"],["Limpio","Sucio"]];
+        // --- LISTA GIGANTE DIAL ---
+        const DIAL_TOPICS = [
+            ["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"],
+            ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"],
+            ["Basura", "Tesoro"], ["Blando", "Duro"], ["Sano", "Insalubre"], ["Legal", "Ilegal"],
+            ["Poco ético", "Ético"], ["Placer", "Dolor"], ["Cierto", "Falso"], ["Normal", "Raro"],
+            ["Talento", "Habilidad"], ["Ciencia ficción", "Fantasía"], ["Sobrevalorado", "Infravalorado"],
+            ["Temporal", "Eterno"], ["Local", "Global"], ["Ruidoso", "Silencioso"], ["Picante", "Dulce"],
+            ["Trabajo", "Hobby"], ["Peligroso", "Seguro"], ["Oscuro", "Luminoso"], ["Pesado", "Ligero"],
+            ["Retro", "Moderno"], ["Físico", "Mental"], ["Niño", "Adulto"], ["Limpio", "Sucio"],
+            ["Rápido", "Lento"], ["Necesario", "Opcional"], ["Triste", "Feliz"], ["Barato", "Lujoso"],
+            ["Gato", "Perro"], ["Cerveza", "Vino"], ["Playa", "Montaña"], ["Carne", "Pescado"],
+            ["Inteligente", "Bello"], ["Ducha", "Baño"], ["Pizza", "Hamburguesa"], ["Star Wars", "Harry Potter"],
+            ["Madrugar", "Trasnochar"], ["Verano", "Invierno"], ["Cine", "Netflix"], ["Libro", "Película"],
+            ["Formal", "Casual"], ["Ordenado", "Caótico"], ["Ahorrador", "Derrochador"], ["Tímido", "Extrovertido"],
+            ["Optimista", "Pesimista"], ["Realista", "Soñador"], ["Vainilla", "Chocolate"], ["Café", "Té"],
+            ["Amor", "Dinero"], ["Justicia", "Venganza"], ["Perdón", "Rencor"], ["Hablar", "Escuchar"]
+        ];
         
+        // --- LISTA CATEGORÍAS ---
         const CAT_LIST = [
             "Marcas de Coche", "Frutas", "Cosas Rojas", "Países de Europa", "Marcas de Ropa", 
             "Animales de Granja", "Cosas que hay en el baño", "Nombres de mujer", "Deportes", 
@@ -97,89 +114,91 @@
             "Bebidas alcohólicas", "Cosas que huelen mal", "Verbos", "Cosas de madera", 
             "Superhéroes", "Cosas que hay en un bolso", "Programas de TV", "Colores", 
             "Cosas que se beben calientes", "Capitales", "Marcas de zapatillas", "Cosas pegajosas",
-            "Villanos de cine", "Cosas que explotan", "Emojis", "Apps del móvil"
+            "Villanos de cine", "Cosas que explotan", "Emojis", "Apps del móvil", "Cosas verdes",
+            "Marcas de cereales", "Cosas que encuentras en la playa", "Videojuegos", "Youtubers"
         ];
 
         // ==========================================
-        // JUEGO 3: CATEGORÍAS (NO DIGAS LO MISMO)
+        // JUEGO 3: CATEGORÍAS (AUTO SEND 5s)
         // ==========================================
         const CategoryGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.catGame || {};
-            const myName = playerRole === 'host' ? roomData.players.host.name : roomData.players.guest.name;
-            const otherName = playerRole === 'host' ? roomData.players.guest.name : roomData.players.host.name;
+            const [localWord, setLocalWord] = React.useState('');
+            const [timeLeft, setTimeLeft] = React.useState(5);
 
-            // Iniciar nueva ronda
+            // Efecto de temporizador local visual y auto-envío
+            React.useEffect(() => {
+                let timer = null;
+                if (game.phase === 'PLAY') {
+                    setTimeLeft(5); // Reset visual
+                    setLocalWord(''); // Limpiar input anterior
+                    
+                    timer = setInterval(() => {
+                        setTimeLeft((prev) => {
+                            if (prev <= 1) {
+                                clearInterval(timer);
+                                // AUTO ENVÍO SI EL TIEMPO SE ACABA
+                                // Usamos una referencia al input actual o el estado local
+                                submitWord(document.getElementById('wordIn')?.value || '');
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(timer);
+            }, [game.phase]);
+
             const startRound = () => {
                 const cat = CAT_LIST[Math.floor(Math.random() * CAT_LIST.length)];
                 db.ref(`salas/${roomId}/catGame`).set({
                     category: cat,
-                    phase: 'COUNTDOWN', // COUNTDOWN -> INPUT -> REVEAL
-                    timer: 5,
-                    p1Word: '', p2Word: '', // p1=Host, p2=Guest
-                    score: game.score || 0 // Mantenemos puntuación
+                    phase: 'PLAY', 
+                    p1Word: '', p2Word: '', 
+                    score: game.score || 0
                 });
-                
-                // Timer de 5s en el servidor (simulado con timeouts en cliente host)
-                let t = 5;
-                const int = setInterval(() => {
-                    t--;
-                    db.ref(`salas/${roomId}/catGame/timer`).set(t);
-                    if(t<=0) {
-                        clearInterval(int);
-                        db.ref(`salas/${roomId}/catGame/phase`).set('INPUT');
-                    }
-                }, 1000);
             };
 
             const submitWord = (word) => {
-                if(!word) return;
                 const field = playerRole === 'host' ? 'p1Word' : 'p2Word';
-                db.ref(`salas/${roomId}/catGame`).update({ [field]: word });
+                // Solo enviamos si no se ha enviado ya
+                db.ref(`salas/${roomId}/catGame`).update({ [field]: word || "..." }); 
             };
 
-            // Verificar si ambos escribieron para revelar
+            // Trigger reveal cuando ambos tienen palabra
             React.useEffect(() => {
-                if (game.phase === 'INPUT' && game.p1Word && game.p2Word) {
-                    if (playerRole === 'host') { // Solo el host trigger para no duplicar
-                        db.ref(`salas/${roomId}/catGame/phase`).set('REVEAL');
-                    }
+                if (game.phase === 'PLAY' && game.p1Word && game.p2Word) {
+                    if (playerRole === 'host') db.ref(`salas/${roomId}/catGame/phase`).set('REVEAL');
                 }
             }, [game.p1Word, game.p2Word, game.phase]);
 
-            const vote = (result) => { // result: 'DIFF' (ganan) o 'SAME' (pierden)
+            const vote = (result) => { 
                 let newScore = game.score;
                 if (result === 'DIFF') newScore += 1;
-                else newScore = 0; // Reinicia racha
-                
+                else newScore = 0; 
                 db.ref(`salas/${roomId}/catGame/score`).set(newScore);
-                startRound(); // Siguiente ronda auto
+                startRound(); 
             };
 
-            if (!game.category) return <div className="card"><h2>🚫 No Digas lo Mismo</h2><p>Objetivo: Escribir palabras DIFERENTES.</p><button onClick={()=>startRound()} className="game-btn btn-cats">EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
+            if (!game.category) return <div className="card"><h2>🚫 No Digas lo Mismo</h2><p>5 Segundos para pensar y escribir.</p><button onClick={()=>startRound()} className="game-btn btn-cats">EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
 
             return (
                 <div className="card">
                     <button onClick={onBack} style={{float:'right', padding:5, background:'transparent', border:'1px solid #555'}}>SALIR</button>
-                    <div style={{clear:'both'}}>RACHA ACTUAL: <span style={{color:'#34d399', fontSize:24, fontWeight:'bold'}}>{game.score}</span></div>
+                    <div style={{clear:'both'}}>RACHA: <span style={{color:'#34d399', fontSize:24, fontWeight:'bold'}}>{game.score}</span></div>
 
                     <div className="cat-display">{game.category}</div>
 
-                    {game.phase === 'COUNTDOWN' && (
+                    {game.phase === 'PLAY' && (
                         <div>
-                            <p>¡Preparados!</p>
-                            <div className="countdown">{game.timer}</div>
-                        </div>
-                    )}
-
-                    {game.phase === 'INPUT' && (
-                        <div>
-                            <p>¡ESCRIBE RÁPIDO!</p>
-                            {/* Input deshabilitado si ya envié */}
+                            <div className={`timer-circle ${timeLeft <= 2 ? 'timer-danger' : ''}`}>{timeLeft}</div>
+                            
+                            {/* Input siempre activo hasta que se envíe */}
                             {(playerRole==='host' && game.p1Word) || (playerRole==='guest' && game.p2Word) ? 
-                                <p className="waiting-pulse">Esperando al otro...</p> 
+                                <p className="waiting-pulse">Enviado. Esperando rival...</p> 
                                 : 
                                 <div>
-                                    <input id="wordIn" placeholder="Tu palabra..." autoFocus />
+                                    <input id="wordIn" placeholder="Escribe aquí..." autoFocus autoComplete="off" />
                                     <button onClick={()=>submitWord(document.getElementById('wordIn').value)}>ENVIAR</button>
                                 </div>
                             }
@@ -191,13 +210,13 @@
                             <div className="word-reveal" style={{borderLeft:'5px solid #be185d'}}>{roomData.players.host.name}: <br/> <span style={{color:'white'}}>{game.p1Word}</span></div>
                             <div className="word-reveal" style={{borderLeft:'5px solid #3b82f6'}}>{roomData.players.guest.name}: <br/> <span style={{color:'white'}}>{game.p2Word}</span></div>
                             
-                            <p style={{marginTop:20}}>¿Son palabras distintas?</p>
+                            <p style={{marginTop:20}}>¿Son distintas?</p>
                             {playerRole === 'host' ? (
                                 <div style={{display:'flex', gap:10}}>
-                                    <button onClick={()=>vote('DIFF')} style={{background:'#10b981'}}>✅ SÍ (+1 Punto)</button>
-                                    <button onClick={()=>vote('SAME')} style={{background:'#ef4444'}}>❌ NO (Perder)</button>
+                                    <button onClick={()=>vote('DIFF')} style={{background:'#10b981'}}>✅ SÍ (+1)</button>
+                                    <button onClick={()=>vote('SAME')} style={{background:'#ef4444'}}>❌ NO (0)</button>
                                 </div>
-                            ) : <p className="waiting-pulse">El Host está validando...</p>}
+                            ) : <p className="waiting-pulse">El Host valida...</p>}
                         </div>
                     )}
                 </div>
