@@ -53,25 +53,24 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 1. CONFIGURACIÓN ---
+        // --- 1. CONFIGURACIÓN (YA PUSE TUS CLAVES) ---
         const firebaseConfig = {
-            apiKey: "PON_TU_API_KEY_AQUI",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            databaseURL: "TU_URL_DATABASE",
-            projectId: "TU_ID",
-            storageBucket: "...",
-            messagingSenderId: "...",
-            appId: "..."
+          apiKey: "AIzaSyCbKOu5vwGbowuI5CfbygKJtYujAKa6zJ0",
+          authDomain: "juegos-tiktok.firebaseapp.com",
+          databaseURL: "https://juegos-tiktok-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "juegos-tiktok",
+          storageBucket: "juegos-tiktok.firebasestorage.app",
+          messagingSenderId: "504168913042",
+          appId: "1:504168913042:web:e9eba88e01f94bcc7a2e4b"
         };
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 2. JUEGO DE COLORES (LÓGICA NUEVA) ---
+        // --- 2. JUEGO DE COLORES (FINAL) ---
         
-        // Configuración del tablero
-        const ROWS_LABELS = ["A","B","C","D","E","F","G","H","I","J","K","L"]; // 12 Filas
-        const COLS_LABELS = ["1","2","3","4","5","6","7","8"]; // 8 Columnas
+        const ROWS_LABELS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+        const COLS_LABELS = ["1","2","3","4","5","6","7","8"];
         
         const getColor = (r, c) => {
             const hue = Math.floor((360 / 12) * r);
@@ -81,14 +80,10 @@
 
         const ColorGame = ({ roomId, playerRole, roomData }) => {
             const game = roomData.colorGame || {};
+            const isMyTurnToGive = game.turn === playerRole;
+            const isMyTurnToGuess = game.turn && game.turn !== playerRole;
             
-            // Definir roles según el turno
-            const isMyTurnToGive = game.turn === playerRole; // Yo doy la pista
-            const isMyTurnToGuess = game.turn && game.turn !== playerRole; // Yo adivino
-            
-            // Función para iniciar juego o cambiar turno
             const nextTurn = () => {
-                // Si no hay turno, empieza el host. Si hay turno host, pasa a guest.
                 const nextPlayer = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 const r = Math.floor(Math.random() * 12);
                 const c = Math.floor(Math.random() * 8);
@@ -96,7 +91,7 @@
                 db.ref(`salas/${roomId}/colorGame`).set({
                     turn: nextPlayer,
                     target: { r, c, code: ROWS_LABELS[r] + COLS_LABELS[c] },
-                    phase: 'HINTING', // HINTING -> GUESSING -> RESULT
+                    phase: 'HINTING',
                     hint: '',
                     guess: null,
                     score: 0
@@ -109,27 +104,16 @@
 
             const makeGuess = (r, c) => {
                 if (game.phase !== 'GUESSING' || !isMyTurnToGuess) return;
-                
-                // Calculamos puntos inmediatamente
                 const dist = Math.max(Math.abs(game.target.r - r), Math.abs(game.target.c - c));
                 const points = dist === 0 ? 3 : (dist === 1 ? 2 : (dist === 2 ? 1 : 0));
-
-                db.ref(`salas/${roomId}/colorGame`).update({ 
-                    guess: { r, c },
-                    phase: 'RESULT',
-                    score: points
-                });
+                db.ref(`salas/${roomId}/colorGame`).update({ guess: { r, c }, phase: 'RESULT', score: points });
             };
 
-            // RENDERIZADO ----------------------
-
-            // 1. Pantalla de Inicio
             if (!game.turn) {
                 return (
                     <div className="card">
                         <h3>🎨 Colores por Turnos</h3>
                         <p>Uno recibe un código (ej: F7) y da una pista.</p>
-                        <p>El otro busca el color en la paleta.</p>
                         {playerRole === 'host' ? 
                             <button onClick={nextTurn}>EMPEZAR PARTIDA</button> : 
                             <p className="pulse">Esperando al anfitrión...</p>
@@ -138,23 +122,17 @@
                 );
             }
 
-            // Nombre del jugador actual
-            const turnName = game.turn === playerRole ? "TI" : "TU PAREJA";
             const currentActorName = game.turn === 'host' ? roomData.players.host.name : roomData.players.guest.name;
 
             return (
                 <div className="card" style={{maxWidth: '100%', padding:10}}>
-                    
-                    {/* Barra Superior */}
                     <div style={{display:'flex', justifyContent:'space-between', marginBottom:10}}>
-                        <span style={{fontWeight:'bold'}}>Le toca a: {currentActorName}</span>
-                        {game.phase === 'RESULT' && <span style={{color:'#db2777', fontWeight:'bold'}}>¡RONDA ACABADA!</span>}
+                        <span style={{fontWeight:'bold'}}>Turno de: {currentActorName}</span>
                     </div>
 
-                    {/* ZONA DE PISTAS Y CÓDIGO */}
                     {isMyTurnToGive && (
                         <div className="code-card">
-                            <div>TU CÓDIGO SECRETO:</div>
+                            <div>TU CÓDIGO:</div>
                             <div className="code-big">{game.target.code}</div>
                             <div style={{height: 20, background: getColor(game.target.r, game.target.c), width: '100%', borderRadius:5, marginTop:5}}></div>
                             
@@ -180,53 +158,34 @@
                         </div>
                     )}
 
-                    {/* RESULTADO Y SIGUIENTE TURNO */}
                     {game.phase === 'RESULT' && (
                         <div style={{margin:'20px 0'}}>
                             <div className="score-popup">+{game.score} PUNTOS</div>
-                            <p>{game.score === 3 ? '¡PERFECTO!' : (game.score > 0 ? '¡CASI!' : 'LEJOS...')}</p>
                             <button onClick={nextTurn}>SIGUIENTE TURNO ➤</button>
                         </div>
                     )}
 
-                    {/* TABLERO (Siempre visible para ver resultados) */}
                     <div className="grid-wrapper">
                         <div className="col-labels">{COLS_LABELS.map(l => <span key={l}>{l}</span>)}</div>
                         <div className="row-container">
                             <div className="row-labels">{ROWS_LABELS.map(l => <span key={l}>{l}</span>)}</div>
-                            
                             <div className="color-grid" style={{width:'100%', opacity: (game.phase === 'HINTING' && isMyTurnToGuess) ? 0.3 : 1}}>
                                 {Array.from({ length: 96 }).map((_, i) => {
                                     const r = Math.floor(i / 8);
                                     const c = i % 8;
-                                    
-                                    // Lógica de visualización
                                     const isTarget = game.target && game.target.r === r && game.target.c === c;
                                     const isGuess = game.guess && game.guess.r === r && game.guess.c === c;
                                     
-                                    // ¿Qué muestro?
-                                    // Si soy el que da la pista: Veo el objetivo siempre. Veo el intento del otro.
-                                    // Si soy el que adivina: No veo el objetivo hasta el final. Veo mi intento.
-                                    
                                     let classes = "color-cell";
-                                    let showStar = false;
-
                                     if (game.phase === 'RESULT') {
-                                        if (isTarget) { classes += " target-mark"; showStar = true; } // Mostrar solución al final
+                                        if (isTarget) classes += " target-mark";
                                         if (isGuess) classes += " selected";
                                     } else {
-                                        if (isMyTurnToGive && isTarget) { classes += " target-mark"; showStar = true; } // Yo veo mi objetivo
+                                        if (isMyTurnToGive && isTarget) classes += " target-mark";
                                     }
 
                                     return (
-                                        <div 
-                                            key={i} 
-                                            className={classes}
-                                            style={{backgroundColor: getColor(r, c)}}
-                                            onClick={() => makeGuess(r, c)}
-                                        >
-                                            {/* Estrella para el objetivo */}
-                                        </div>
+                                        <div key={i} className={classes} style={{backgroundColor: getColor(r, c)}} onClick={() => makeGuess(r, c)}></div>
                                     );
                                 })}
                             </div>
