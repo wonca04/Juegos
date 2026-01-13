@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate (Full)</title>
+    <title>Juegos Parejas Ultimate (Final)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -121,10 +121,10 @@
             
             const initGame = () => {
                 const starter = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
-                // PRIMER PASO: Fase de elección inicial (Café o Té)
+                // PASO 1: SETUP (Escribir secreto)
                 db.ref(`salas/${roomId}/mindGame`).set({
                     turn: starter,
-                    phase: 'START_SELECT', 
+                    phase: 'SETUP', 
                     setter: starter, 
                     guesser: starter === 'host' ? 'guest' : 'host',
                     secretWord: '',
@@ -133,17 +133,19 @@
                 });
             };
 
-            const setStartBase = (base) => {
+            const setSecret = (word) => {
+                if(!word) return;
+                // PASO 2: ELEGIR BASE (Café o Té)
                 db.ref(`salas/${roomId}/mindGame`).update({ 
-                    currentBase: base,
-                    phase: 'SETUP'
+                    secretWord: word.toUpperCase(), 
+                    phase: 'START_SELECT'
                 });
             };
 
-            const setSecret = (word) => {
-                if(!word) return;
+            const setStartBase = (base) => {
+                // PASO 3: EMPEZAR A JUGAR
                 db.ref(`salas/${roomId}/mindGame`).update({ 
-                    secretWord: word.toUpperCase(), 
+                    currentBase: base,
                     phase: 'GUESSING' 
                 });
             };
@@ -176,32 +178,32 @@
                     <button onClick={onBack} style={{float:'right', padding:5, background:'transparent', border:'1px solid #555'}}>SALIR</button>
                     <div style={{clear:'both', color:'#aaa', marginBottom:10}}>RONDA DE: {game.setter === 'host' ? roomData.players.host.name : roomData.players.guest.name}</div>
 
-                    {/* FASE 0: ELEGIR INICIO (CAFÉ O TÉ) */}
-                    {game.phase === 'START_SELECT' && (
-                        <div>
-                            {playerRole === game.setter ? (
-                                <div>
-                                    <p>¿Cómo empezamos la partida?</p>
-                                    <div style={{display:'flex', justifyContent:'center'}}>
-                                        <button className="start-choice-btn" style={{background:'#78350f'}} onClick={()=>setStartBase('CAFÉ')}>☕ CAFÉ</button>
-                                        <button className="start-choice-btn" style={{background:'#065f46'}} onClick={()=>setStartBase('TÉ')}>🍵 TÉ</button>
-                                    </div>
-                                </div>
-                            ) : <p className="waiting-pulse">Tu pareja está eligiendo si Café o Té...</p>}
-                        </div>
-                    )}
-
                     {/* FASE 1: PENSAR PALABRA SECRETA */}
                     {game.phase === 'SETUP' && (
                         <div>
                             {playerRole === game.setter ? (
                                 <div>
-                                    <p>Empezamos con: <b style={{color:'#fbbf24'}}>{game.currentBase}</b></p>
-                                    <p>Piensa una palabra secreta:</p>
+                                    <p>1. Piensa una palabra secreta:</p>
                                     <input id="secretIn" placeholder="Ej: Océano" autoComplete="off" />
                                     <button onClick={()=>setSecret(document.getElementById('secretIn').value)}>FIJAR SECRETO</button>
                                 </div>
-                            ) : <p className="waiting-pulse">Tu pareja piensa una palabra secreta (empezando desde {game.currentBase})...</p>}
+                            ) : <p className="waiting-pulse">Tu pareja está pensando una palabra...</p>}
+                        </div>
+                    )}
+
+                    {/* FASE 2: ELEGIR INICIO (CAFÉ O TÉ) */}
+                    {game.phase === 'START_SELECT' && (
+                        <div>
+                            {playerRole === game.setter ? (
+                                <div>
+                                    <div className="secret-box">Secreto: <b>{game.secretWord}</b></div>
+                                    <p>2. ¿Desde dónde debe empezar tu pareja?</p>
+                                    <div style={{display:'flex', justifyContent:'center'}}>
+                                        <button className="start-choice-btn" style={{background:'#78350f'}} onClick={()=>setStartBase('CAFÉ')}>☕ CAFÉ</button>
+                                        <button className="start-choice-btn" style={{background:'#065f46'}} onClick={()=>setStartBase('TÉ')}>🍵 TÉ</button>
+                                    </div>
+                                </div>
+                            ) : <p className="waiting-pulse">Tu pareja está eligiendo si empezar con Café o Té...</p>}
                         </div>
                     )}
 
@@ -214,7 +216,7 @@
                             
                             <div className="current-winner">BASE: {game.currentBase}</div>
 
-                            {/* FASE 2: ADIVINAR (GUESSER) */}
+                            {/* FASE DE ADIVINAR (GUESSER) */}
                             {game.phase === 'GUESSING' && (
                                 <div>
                                     {playerRole === game.guesser ? (
@@ -227,7 +229,7 @@
                                 </div>
                             )}
 
-                            {/* FASE 3: ELEGIR (SETTER) */}
+                            {/* FASE DE ELEGIR (SETTER) */}
                             {game.phase === 'CHOOSING' && (
                                 <div>
                                     {playerRole === game.setter ? (
