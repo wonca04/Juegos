@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas (Final Fix)</title>
+    <title>Juegos Parejas Ultimate (Pack 3)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -29,83 +29,31 @@
         .game-btn { padding: 20px; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid transparent; }
         .btn-colors { background: linear-gradient(45deg, #ef4444, #eab308, #3b82f6); }
         .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
+        .btn-cats { background: linear-gradient(45deg, #10b981, #34d399); color: #064e3b; }
 
-        /* ============================
-           ESTILOS DIAL (SOLUCIÓN GRÁFICA)
-           ============================ */
-        .dial-main-container {
-            position: relative;
-            width: 300px;
-            height: 160px;
-            margin: 20px auto;
-        }
-
-        /* MÁSCARA */
-        .dial-mask {
-            width: 300px; height: 150px;
-            overflow: hidden;
-            border-top-left-radius: 150px;
-            border-top-right-radius: 150px;
-            position: absolute; top: 0; left: 0;
-            background: #374151;
-            border-bottom: 2px solid #555;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-            z-index: 1;
-        }
-
-        /* TRIÁNGULO DE PUNTOS (NUEVA LÓGICA SIN CORTES) */
-        .target-wedge-wrapper {
-            position: absolute; bottom: 0; left: 50%;
-            width: 0; height: 0;
-            z-index: 2;
-            transition: opacity 0.3s ease;
-        }
-        
-        .target-wedge-graphic {
-            width: 300px; height: 300px;
-            border-radius: 50%;
-            position: absolute;
-            top: -150px; left: -150px; /* Centrado en el pivot */
-            
-            /* LÓGICA NUEVA: EMPIEZA EN -28 GRADOS (RESTA) Y SUMA. ASÍ NO SE CORTA. */
-            /* Amarillo: 10 grados ancho | Naranja: 10 grados ancho | Rosa: 16 grados ancho */
-            /* Total ancho: 28 izq + 28 der = 56 grados */
-            background: conic-gradient(
-                from -28deg at 50% 50%,
-                #facc15 0deg,             
-                #facc15 10deg,            
-                #f97316 10deg,            
-                #f97316 20deg,
-                #be185d 20deg,            
-                #be185d 36deg,            
-                #f97316 36deg,              
-                #f97316 46deg,
-                #facc15 46deg,             
-                #facc15 56deg,             
-                transparent 56deg
-            );
-        }
-
-        /* AGUJA */
-        .needle-container {
-            position: absolute; bottom: 10px; left: 50%;
-            width: 0; height: 0; z-index: 10;
-        }
-        .needle { 
-            width: 4px; height: 140px; background: #ef4444; 
-            position: absolute; bottom: 0; left: -2px; 
-            transform-origin: bottom center; 
-            border-radius: 2px; box-shadow: 0 0 5px rgba(255,0,0,0.8);
-            transition: transform 0.1s cubic-bezier(0,0,0.2,1); 
-        }
-        .knob { width: 24px; height: 24px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: 0; left: 50%; transform: translate(-50%, 50%); z-index: 20; border: 2px solid #ef4444; box-shadow: 0 2px 5px black; }
-
-        .topic-card { background: #312e81; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
-        
+        /* ESTILOS COMUNES JUEGOS */
+        .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .score-big { font-size: 60px; font-weight: 900; margin: 10px 0; text-shadow: 0 4px 10px black; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
-        /* ESTILOS COLORES */
+        /* JUEGO CATEGORÍAS */
+        .cat-display { font-size: 24px; font-weight: bold; color: #34d399; margin: 20px 0; padding: 20px; border: 2px dashed #34d399; border-radius: 15px; }
+        .countdown { font-size: 80px; font-weight: 900; color: #facc15; animation: zoom 1s infinite; }
+        @keyframes zoom { 0% { transform: scale(1); opacity:1; } 100% { transform: scale(1.5); opacity:0; } }
+        .word-reveal { font-size: 28px; font-weight: bold; margin: 10px 0; padding: 10px; background: #333; border-radius: 10px; }
+        
+        /* DIAL Styles */
+        .dial-main-container { position: relative; width: 300px; height: 160px; margin: 20px auto; }
+        .dial-mask { width: 300px; height: 150px; overflow: hidden; border-top-left-radius: 150px; border-top-right-radius: 150px; position: absolute; top: 0; left: 0; background: #374151; border-bottom: 2px solid #555; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); z-index: 1; }
+        .target-wedge-wrapper { position: absolute; bottom: 0; left: 50%; width: 0; height: 0; z-index: 2; transition: opacity 0.3s ease; }
+        .target-wedge-graphic { width: 300px; height: 300px; border-radius: 50%; position: absolute; top: -150px; left: -150px; background: conic-gradient(from -28deg at 50% 50%, #facc15 0deg, #facc15 10deg, #f97316 10deg, #f97316 20deg, #be185d 20deg, #be185d 36deg, #f97316 36deg, #f97316 46deg, #facc15 46deg, #facc15 56deg, transparent 56deg); }
+        .needle-container { position: absolute; bottom: 10px; left: 50%; width: 0; height: 0; z-index: 10; }
+        .needle { width: 4px; height: 140px; background: #ef4444; position: absolute; bottom: 0; left: -2px; transform-origin: bottom center; border-radius: 2px; box-shadow: 0 0 5px rgba(255,0,0,0.8); transition: transform 0.1s cubic-bezier(0,0,0.2,1); }
+        .knob { width: 24px; height: 24px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: 0; left: 50%; transform: translate(-50%, 50%); z-index: 20; border: 2px solid #ef4444; box-shadow: 0 2px 5px black; }
+        .topic-card { background: #312e81; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
+
+        /* COLORES Styles */
         .grid-wrapper { overflow-x: auto; padding-bottom: 10px; display: flex; justify-content: center; }
         .color-grid { display: grid; grid-template-columns: repeat(20, 1fr); gap: 1px; background: #000; padding: 2px; border-radius: 6px; min-width: 340px; }
         .color-cell { aspect-ratio: 1; border-radius: 1px; cursor: pointer; position: relative; }
@@ -114,11 +62,9 @@
         .guess-mark-current { box-shadow: 0 0 0 2px white, 0 0 8px #be185d; z-index: 10; transform: scale(1.2); }
         .hint-display { background: #333; padding: 8px; border-radius: 6px; font-style: italic; border-left: 3px solid #be185d; text-align: left; margin: 5px 0; font-size: 14px; }
         
-        /* CHAT FLOTANTE */
+        /* CHAT */
         .chat-btn { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 9999; border: 2px solid white; box-shadow: 0 4px 10px black; cursor: pointer; font-size: 20px; }
         .chat-overlay { position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; background: #222; border-top: 2px solid #be185d; z-index: 9998; display: flex; flex-direction: column; box-shadow: 0 -10px 50px rgba(0,0,0,0.5); }
-        .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -126,6 +72,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyCbKOu5vwGbowuI5CfbygKJtYujAKa6zJ0",
           authDomain: "juegos-tiktok.firebaseapp.com",
@@ -135,24 +82,130 @@
           messagingSenderId: "504168913042",
           appId: "1:504168913042:web:e9eba88e01f94bcc7a2e4b"
         };
-
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // LISTA DE CATEGORÍAS
-        const TOPICS = [
-            ["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"],
-            ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"],
-            ["Basura", "Tesoro"], ["Blando", "Duro"], ["Sano", "Insalubre"], ["Legal", "Ilegal"],
-            ["Poco ético", "Ético"], ["Placer", "Dolor"], ["Cierto", "Falso"], ["Normal", "Raro"],
-            ["Talento", "Habilidad"], ["Ciencia ficción", "Fantasía"], ["Sobrevalorado", "Infravalorado"],
-            ["Temporal", "Eterno"], ["Local", "Global"], ["Ruidoso", "Silencioso"], ["Picante", "Dulce"],
-            ["Trabajo", "Hobby"], ["Peligroso", "Seguro"], ["Oscuro", "Luminoso"], ["Pesado", "Ligero"],
-            ["Retro", "Moderno"], ["Físico", "Mental"], ["Niño", "Adulto"], ["Limpio", "Sucio"]
+        // DATOS
+        const DIAL_TOPICS = [["Frío","Caliente"],["Feo","Guapo"],["Barato","Caro"],["Inútil","Útil"],["Aburrido","Divertido"],["Seco","Mojado"],["Fácil","Difícil"],["Odiado","Amado"],["Basura","Tesoro"],["Blando","Duro"],["Sano","Insalubre"],["Legal","Ilegal"],["Poco ético","Ético"],["Placer","Dolor"],["Cierto","Falso"],["Normal","Raro"],["Talento","Habilidad"],["Ciencia","Fantasía"],["Temporal","Eterno"],["Local","Global"],["Ruidoso","Silencioso"],["Picante","Dulce"],["Trabajo","Hobby"],["Peligroso","Seguro"],["Oscuro","Luminoso"],["Retro","Moderno"],["Niño","Adulto"],["Limpio","Sucio"]];
+        
+        const CAT_LIST = [
+            "Marcas de Coche", "Frutas", "Cosas Rojas", "Países de Europa", "Marcas de Ropa", 
+            "Animales de Granja", "Cosas que hay en el baño", "Nombres de mujer", "Deportes", 
+            "Sabores de helado", "Cosas que se rompen", "Películas Disney", "Cosas redondas", 
+            "Comida basura", "Cosas que vuelan", "Instrumentos musicales", "Cosas frías", 
+            "Marcas de tecnología", "Partes del cuerpo", "Cosas que dan miedo", "Animales marinos", 
+            "Bebidas alcohólicas", "Cosas que huelen mal", "Verbos", "Cosas de madera", 
+            "Superhéroes", "Cosas que hay en un bolso", "Programas de TV", "Colores", 
+            "Cosas que se beben calientes", "Capitales", "Marcas de zapatillas", "Cosas pegajosas",
+            "Villanos de cine", "Cosas que explotan", "Emojis", "Apps del móvil"
         ];
 
         // ==========================================
-        // JUEGO 1: EL DIAL (WAVELENGTH)
+        // JUEGO 3: CATEGORÍAS (NO DIGAS LO MISMO)
+        // ==========================================
+        const CategoryGame = ({ roomId, playerRole, roomData, onBack }) => {
+            const game = roomData.catGame || {};
+            const myName = playerRole === 'host' ? roomData.players.host.name : roomData.players.guest.name;
+            const otherName = playerRole === 'host' ? roomData.players.guest.name : roomData.players.host.name;
+
+            // Iniciar nueva ronda
+            const startRound = () => {
+                const cat = CAT_LIST[Math.floor(Math.random() * CAT_LIST.length)];
+                db.ref(`salas/${roomId}/catGame`).set({
+                    category: cat,
+                    phase: 'COUNTDOWN', // COUNTDOWN -> INPUT -> REVEAL
+                    timer: 5,
+                    p1Word: '', p2Word: '', // p1=Host, p2=Guest
+                    score: game.score || 0 // Mantenemos puntuación
+                });
+                
+                // Timer de 5s en el servidor (simulado con timeouts en cliente host)
+                let t = 5;
+                const int = setInterval(() => {
+                    t--;
+                    db.ref(`salas/${roomId}/catGame/timer`).set(t);
+                    if(t<=0) {
+                        clearInterval(int);
+                        db.ref(`salas/${roomId}/catGame/phase`).set('INPUT');
+                    }
+                }, 1000);
+            };
+
+            const submitWord = (word) => {
+                if(!word) return;
+                const field = playerRole === 'host' ? 'p1Word' : 'p2Word';
+                db.ref(`salas/${roomId}/catGame`).update({ [field]: word });
+            };
+
+            // Verificar si ambos escribieron para revelar
+            React.useEffect(() => {
+                if (game.phase === 'INPUT' && game.p1Word && game.p2Word) {
+                    if (playerRole === 'host') { // Solo el host trigger para no duplicar
+                        db.ref(`salas/${roomId}/catGame/phase`).set('REVEAL');
+                    }
+                }
+            }, [game.p1Word, game.p2Word, game.phase]);
+
+            const vote = (result) => { // result: 'DIFF' (ganan) o 'SAME' (pierden)
+                let newScore = game.score;
+                if (result === 'DIFF') newScore += 1;
+                else newScore = 0; // Reinicia racha
+                
+                db.ref(`salas/${roomId}/catGame/score`).set(newScore);
+                startRound(); // Siguiente ronda auto
+            };
+
+            if (!game.category) return <div className="card"><h2>🚫 No Digas lo Mismo</h2><p>Objetivo: Escribir palabras DIFERENTES.</p><button onClick={()=>startRound()} className="game-btn btn-cats">EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
+
+            return (
+                <div className="card">
+                    <button onClick={onBack} style={{float:'right', padding:5, background:'transparent', border:'1px solid #555'}}>SALIR</button>
+                    <div style={{clear:'both'}}>RACHA ACTUAL: <span style={{color:'#34d399', fontSize:24, fontWeight:'bold'}}>{game.score}</span></div>
+
+                    <div className="cat-display">{game.category}</div>
+
+                    {game.phase === 'COUNTDOWN' && (
+                        <div>
+                            <p>¡Preparados!</p>
+                            <div className="countdown">{game.timer}</div>
+                        </div>
+                    )}
+
+                    {game.phase === 'INPUT' && (
+                        <div>
+                            <p>¡ESCRIBE RÁPIDO!</p>
+                            {/* Input deshabilitado si ya envié */}
+                            {(playerRole==='host' && game.p1Word) || (playerRole==='guest' && game.p2Word) ? 
+                                <p className="waiting-pulse">Esperando al otro...</p> 
+                                : 
+                                <div>
+                                    <input id="wordIn" placeholder="Tu palabra..." autoFocus />
+                                    <button onClick={()=>submitWord(document.getElementById('wordIn').value)}>ENVIAR</button>
+                                </div>
+                            }
+                        </div>
+                    )}
+
+                    {game.phase === 'REVEAL' && (
+                        <div>
+                            <div className="word-reveal" style={{borderLeft:'5px solid #be185d'}}>{roomData.players.host.name}: <br/> <span style={{color:'white'}}>{game.p1Word}</span></div>
+                            <div className="word-reveal" style={{borderLeft:'5px solid #3b82f6'}}>{roomData.players.guest.name}: <br/> <span style={{color:'white'}}>{game.p2Word}</span></div>
+                            
+                            <p style={{marginTop:20}}>¿Son palabras distintas?</p>
+                            {playerRole === 'host' ? (
+                                <div style={{display:'flex', gap:10}}>
+                                    <button onClick={()=>vote('DIFF')} style={{background:'#10b981'}}>✅ SÍ (+1 Punto)</button>
+                                    <button onClick={()=>vote('SAME')} style={{background:'#ef4444'}}>❌ NO (Perder)</button>
+                                </div>
+                            ) : <p className="waiting-pulse">El Host está validando...</p>}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ==========================================
+        // JUEGO 1: DIAL (WAVELENGTH)
         // ==========================================
         const DialGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.dialGame || {};
@@ -162,101 +215,39 @@
 
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
-                const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-                
-                // ALEATORIEDAD CORREGIDA: Usa todo el rango (20 a 160 grados)
+                const topic = DIAL_TOPICS[Math.floor(Math.random() * DIAL_TOPICS.length)];
                 const target = Math.floor(Math.random() * 140) + 20; 
-                
                 db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
-
             const sendHint = (txt) => txt && db.ref(`salas/${roomId}/dialGame`).update({ hint: txt, phase: 'GUESSING' });
-            
             const moveNeedle = (val) => iAmGuesser && game.phase === 'GUESSING' && db.ref(`salas/${roomId}/dialGame`).update({ needleAngle: parseInt(val) });
-            
             const confirmGuess = () => {
-                // Leer el valor ACTUAL
                 const currentVal = parseInt(document.getElementById('dialInput').value);
-                
-                // ZONAS AMPLIADAS PARA QUE SEA MÁS FÁCIL
-                // Rosa: +/- 8 grados | Naranja: +/- 18 grados | Amarillo: +/- 28 grados
                 const diff = Math.abs(game.targetAngle - currentVal);
-                
-                let pts = 0;
-                if (diff <= 8) pts = 4;
-                else if (diff <= 18) pts = 3;
-                else if (diff <= 28) pts = 2;
-                
+                let pts = 0; if (diff <= 8) pts = 4; else if (diff <= 18) pts = 3; else if (diff <= 28) pts = 2;
                 db.ref(`salas/${roomId}/dialGame`).update({ phase: 'RESULT', score: pts, needleAngle: currentVal });
             };
 
             if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
-
-            // Rotaciones CSS
-            const needleRot = game.needleAngle - 90;
-            const targetRot = game.targetAngle - 90; 
-            const showZone = iAmPsychic || game.phase === 'RESULT';
+            const needleRot = game.needleAngle - 90; const targetRot = game.targetAngle - 90; const showZone = iAmPsychic || game.phase === 'RESULT';
 
             return (
                 <div className="card">
                     <button onClick={onBack} style={{padding:5, fontSize:12, width:'auto', background:'transparent', border:'1px solid #555', float:'right'}}>SALIR</button>
                     <div style={{clear:'both', marginBottom:10, fontSize:12, color:'#aaa'}}>TURNO: {isHostTurn ? roomData.players.host.name : roomData.players.guest.name}</div>
-                    
-                    <div className="topic-card">
-                        <span style={{color:'#93c5fd', width:'45%', textAlign:'left'}}>⬅️ {game.topic[0]}</span>
-                        <span style={{color:'#fda4af', width:'45%', textAlign:'right'}}>{game.topic[1]} ➡️</span>
-                    </div>
-
+                    <div className="topic-card"><span style={{color:'#93c5fd', width:'45%', textAlign:'left'}}>⬅️ {game.topic[0]}</span><span style={{color:'#fda4af', width:'45%', textAlign:'right'}}>{game.topic[1]} ➡️</span></div>
                     <div className="dial-main-container">
-                        <div className="dial-mask">
-                            {/* EL TRIÁNGULO GIRA COMPLETO */}
-                            <div className="target-wedge-wrapper" style={{ transform: `rotate(${targetRot}deg)`, opacity: showZone ? 1 : 0 }}>
-                                <div className="target-wedge-graphic"></div>
-                            </div>
-                        </div>
-
-                        <div className="needle-container">
-                             <div className="needle" style={{ transform: `rotate(${needleRot}deg)` }}></div>
-                        </div>
-                        <div className="knob"></div>
+                        <div className="dial-mask"><div className="target-wedge-wrapper" style={{ transform: `rotate(${targetRot}deg)`, opacity: showZone ? 1 : 0 }}><div className="target-wedge-graphic"></div></div></div>
+                        <div className="needle-container"><div className="needle" style={{ transform: `rotate(${needleRot}deg)` }}></div></div><div className="knob"></div>
                     </div>
-
-                    {iAmPsychic && (
-                        <div>
-                            {game.phase === 'HINTING' && <><p style={{color:'#be185d', fontSize:14}}>Tú ves la zona. ¡Da una pista!</p><input id="h" placeholder="Tu pista..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR PISTA</button></>}
-                            {game.phase === 'GUESSING' && <p className="waiting-pulse">Tu pareja está moviendo la aguja...</p>}
-                            
-                            {game.phase === 'RESULT' && (
-                                <div>
-                                    <div className="score-big" style={{color: game.score===4?'#be185d':(game.score>0?'#f97316':'#555')}}>+{game.score}</div>
-                                    <p className="waiting-pulse">Esperando a que tu pareja inicie...</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {iAmGuesser && (
-                        <div>
-                            {game.phase === 'HINTING' && <p className="waiting-pulse">Esperando pista...</p>}
-                            {game.phase === 'GUESSING' && <>
-                                <div className="hint-display" style={{textAlign:'center', fontSize:18}}>"{game.hint}"</div>
-                                <input id="dialInput" type="range" min="0" max="180" value={game.needleAngle} onChange={e=>moveNeedle(e.target.value)} style={{width:'100%', accentColor:'#ef4444', height:30}} />
-                                <button onClick={confirmGuess} style={{background:'#ef4444'}}>BLOQUEAR</button>
-                            </>}
-                            {game.phase === 'RESULT' && (
-                                <div>
-                                    <div className="score-big" style={{color: game.score===4?'#be185d':(game.score>0?'#f97316':'#555')}}>+{game.score}</div>
-                                    <button onClick={startTurn}>SIGUIENTE</button>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    {iAmPsychic && (game.phase === 'HINTING' ? <><p style={{color:'#be185d'}}>Tú ves la zona. ¡Pista!</p><input id="h" placeholder="..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR</button></> : (game.phase === 'RESULT' ? <><div className="score-big">+{game.score}</div><p className="waiting-pulse">Esperando...</p></> : <p className="waiting-pulse">Tu pareja juega...</p>))}
+                    {iAmGuesser && (game.phase === 'GUESSING' ? <><div className="hint-display">"{game.hint}"</div><input id="dialInput" type="range" min="0" max="180" value={game.needleAngle} onChange={e=>moveNeedle(e.target.value)} style={{width:'100%', accentColor:'#ef4444', height:30}} /><button onClick={confirmGuess} style={{background:'#ef4444'}}>BLOQUEAR</button></> : (game.phase === 'RESULT' ? <><div className="score-big">+{game.score}</div><button onClick={startTurn}>SIGUIENTE</button></> : <p className="waiting-pulse">Esperando pista...</p>))}
                 </div>
             );
         };
 
         // ==========================================
-        // JUEGO 2: COLORES (Sin cambios)
+        // JUEGO 2: COLORES
         // ==========================================
         const ColorGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.colorGame || {};
@@ -264,33 +255,12 @@
             const iAmGiver = (isHostTurn && playerRole === 'host') || (!isHostTurn && playerRole === 'guest');
             const iAmGuesser = !iAmGiver;
             const COLS=20, ROWS=15, LABELS="ABCDEFGHIJKLMNO".split('');
+            const getColor = (r, c) => { const hue = Math.floor((360 / COLS) * c); let l=50,s=100; if(r<5){l=100-(r*10);s=50+(r*10);}else if(r>9){l=50-((r-9)*8);} return `hsl(${hue},${s}%,${l}%)`; };
 
-            const getColor = (r, c) => {
-                const hue = Math.floor((360 / COLS) * c);
-                let l = 50, s = 100;
-                if (r < 5) { l = 100 - (r * 10); s = 50 + (r * 10); } else if (r > 9) { l = 50 - ((r - 9) * 8); }
-                return `hsl(${hue}, ${s}%, ${l}%)`;
-            };
-
-            const startTurn = () => {
-                const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
-                const r = Math.floor(Math.random() * ROWS), c = Math.floor(Math.random() * COLS);
-                db.ref(`salas/${roomId}/colorGame`).set({ turn: nextTurn, target: {r, c, code: `${LABELS[r]}-${c+1}`}, step: 1, score: 0 });
-            };
-
+            const startTurn = () => { const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest'; const r = Math.floor(Math.random()*ROWS), c = Math.floor(Math.random()*COLS); db.ref(`salas/${roomId}/colorGame`).set({ turn: nextTurn, target: {r, c, code: `${LABELS[r]}-${c+1}`}, step: 1, score: 0 }); };
             const sendHint = (txt) => txt && db.ref(`salas/${roomId}/colorGame`).update({ [`hints/h${game.step === 1 ? 1 : 2}`]: txt, step: game.step + 1, currentCursor: null });
             const touchGrid = (r, c) => iAmGuesser && (game.step === 2 || game.step === 4) && db.ref(`salas/${roomId}/colorGame`).update({ currentCursor: {r, c} });
-            
-            const confirmGuess = () => {
-                if(!game.currentCursor) return;
-                const nextStep = game.step + 1;
-                const update = { step: nextStep, [`guesses/g${game.step===2?1:2}`]: game.currentCursor, currentCursor: null };
-                if (game.step === 4) {
-                    const dist = Math.max(Math.abs(game.target.r - game.currentCursor.r), Math.abs(game.target.c - game.currentCursor.c));
-                    update.score = dist === 0 ? 3 : (dist <= 1 ? 2 : (dist <= 3 ? 1 : 0));
-                }
-                db.ref(`salas/${roomId}/colorGame`).update(update);
-            };
+            const confirmGuess = () => { if(!game.currentCursor) return; const update = { step: game.step+1, [`guesses/g${game.step===2?1:2}`]: game.currentCursor, currentCursor: null }; if(game.step===4){ const dist=Math.max(Math.abs(game.target.r-game.currentCursor.r),Math.abs(game.target.c-game.currentCursor.c)); update.score=dist===0?3:(dist<=1?2:(dist<=3?1:0)); } db.ref(`salas/${roomId}/colorGame`).update(update); };
 
             if (!game.turn) return <div className="card"><h2>🎨 Colores</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
             if (!game.target) return <div className="card">Cargando...</div>;
@@ -299,46 +269,16 @@
                 <div className="card" style={{maxWidth:'100%', padding:10}}>
                     <button onClick={onBack} style={{padding:5, fontSize:12, width:'auto', background:'transparent', border:'1px solid #555', float:'right'}}>SALIR</button>
                     <div style={{clear:'both', marginBottom:10, fontSize:12, color:'#aaa'}}>TURNO: {isHostTurn ? roomData.players.host.name : roomData.players.guest.name} | PASO: {game.step}/5</div>
-                    
-                    {iAmGiver && (
-                        <div>
-                            {game.step < 5 && <div style={{background:'#333', padding:5, marginBottom:5}}><div className="coord-box">{game.target.code}</div><div style={{height:15, background:getColor(game.target.r, game.target.c), width:'100%'}}></div></div>}
-                            {(game.step===1 || game.step===3) && <><input id="hin" placeholder={`Pista ${game.step===1?1:2}...`} /><button onClick={()=>sendHint(document.getElementById('hin').value)}>ENVIAR</button></>}
-                            {(game.step===2 || game.step===4) && <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor?'#10b981':'#444'}}>{game.currentCursor ? 'CONFIRMAR ELECCIÓN' : 'ESPERANDO...'}</button>}
-                        </div>
-                    )}
-                    {iAmGuesser && (
-                        <div>
-                            {(game.step===1 || game.step===3) && <p className="waiting-pulse">Esperando pista...</p>}
-                            {(game.step===2 || game.step===4) && <><div className="hint-display">"{game.step===2 ? game.hints?.h1 : game.hints?.h2}"</div><p style={{color:'#10b981', margin:5}}>¡TOCA EL MAPA!</p></>}
-                            {(game.step===2 || game.step===4) && <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor?'#be185d':'#444'}}>{game.step===2?'CONFIRMAR PRIMERA':'CONFIRMAR FINAL'}</button>}
-                        </div>
-                    )}
-                    {game.step === 5 && (
-                        <div><div style={{fontSize:40, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div><div style={{display:'flex',justifyContent:'center', gap:5}}><div className="coord-box" style={{fontSize:14}}>{game.target.code}</div><div style={{width:20, height:20, background:getColor(game.target.r, game.target.c)}}></div></div>
-                        {iAmGuesser ? <button onClick={startTurn}>SIGUIENTE</button> : <p className="waiting-pulse">Tu pareja ve el resultado...</p>}</div>
-                    )}
-
-                    <div className="grid-wrapper">
-                        <div className="color-grid">
-                            {Array.from({ length: COLS * ROWS }).map((_, i) => {
-                                const r = Math.floor(i / COLS), c = i % COLS;
-                                const isTarget = (iAmGiver || game.step === 5) && game.target.r === r && game.target.c === c;
-                                const isCur = game.currentCursor && game.currentCursor.r === r && game.currentCursor.c === c;
-                                const isG1 = game.guesses?.g1 && game.guesses.g1.r === r && game.guesses.g1.c === c;
-                                let cls = "color-cell";
-                                if (isTarget) cls += " target-star";
-                                if (isCur) cls += " guess-mark-current";
-                                return <div key={i} className={cls} style={{ backgroundColor: getColor(r, c), border: isG1 ? '1px solid rgba(255,255,255,0.5)' : 'none' }} onClick={() => touchGrid(r, c)}></div>;
-                            })}
-                        </div>
-                    </div>
+                    {iAmGiver && (game.step<5 ? <div><div style={{background:'#333', padding:5, marginBottom:5}}><div className="coord-box">{game.target.code}</div><div style={{height:15, background:getColor(game.target.r, game.target.c), width:'100%'}}></div></div> {(game.step===1||game.step===3)?<><input id="hin" placeholder={`Pista...`} /><button onClick={()=>sendHint(document.getElementById('hin').value)}>ENVIAR</button></>:<button onClick={confirmGuess} disabled={!game.currentCursor} style={{background:game.currentCursor?'#10b981':'#444'}}>CONFIRMAR</button>}</div> : null)}
+                    {iAmGuesser && (game.step<5 ? <div>{(game.step===1||game.step===3)?<p className="waiting-pulse">Esperando pista...</p>:<><div className="hint-display">"{game.step===2?game.hints?.h1:game.hints?.h2}"</div><button onClick={confirmGuess} disabled={!game.currentCursor} style={{background:game.currentCursor?'#be185d':'#444'}}>{game.step===2?'CONFIRMAR 1':'CONFIRMAR FINAL'}</button></>}</div> : null)}
+                    {game.step===5 && <div><div style={{fontSize:40, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div>{iAmGuesser?<button onClick={startTurn}>SIGUIENTE</button>:<p className="waiting-pulse">Esperando...</p>}</div>}
+                    <div className="grid-wrapper"><div className="color-grid">{Array.from({ length: COLS*ROWS }).map((_, i) => { const r=Math.floor(i/COLS), c=i%COLS; const isT=(iAmGiver||game.step===5)&&game.target.r===r&&game.target.c===c; const isC=game.currentCursor&&game.currentCursor.r===r&&game.currentCursor.c===c; let cls="color-cell"; if(isT) cls+=" target-star"; if(isC) cls+=" guess-mark-current"; return <div key={i} className={cls} style={{backgroundColor:getColor(r,c)}} onClick={()=>touchGrid(r,c)}></div>; })}</div></div>
                 </div>
             );
         };
 
         // ==========================================
-        // APP PRINCIPAL
+        // APP SHELL
         // ==========================================
         function App() {
             const [playerName, setPlayerName] = React.useState(localStorage.getItem('name') || '');
@@ -350,51 +290,32 @@
             const [msgs, setMsgs] = React.useState([]);
 
             React.useEffect(() => { localStorage.setItem('name', playerName); }, [playerName]);
-            React.useEffect(() => {
-                if (roomId) {
-                    db.ref('salas/' + roomId).on('value', snap => {
-                        const d = snap.val();
-                        if (d) {
-                            setRoomData(d);
-                            if (view === 'waiting' && d.players.guest) setView('game'); 
-                            if (d.chat) setMsgs(Object.values(d.chat));
-                        }
-                    });
-                }
-            }, [roomId, view]);
+            React.useEffect(() => { if (roomId) db.ref('salas/'+roomId).on('value', snap => { const d=snap.val(); if(d){ setRoomData(d); if(view==='waiting'&&d.players.guest) setView('game'); if(d.chat) setMsgs(Object.values(d.chat)); } }); }, [roomId, view]);
 
             const create = () => { const id=Math.random().toString(36).substr(2,4).toUpperCase(); db.ref('salas/'+id).set({players:{host:{name:playerName}}, gameState:'MENU'}); setRoomId(id); setView('waiting'); };
             const join = (c) => db.ref('salas/'+c).once('value', s => { if(s.exists()){ db.ref('salas/'+c+'/players/guest').set({name:playerName}); setRoomId(c); setView('game'); } });
             const sendC = () => chatMsg && db.ref('salas/'+roomId+'/chat').push({user:playerName, text:chatMsg}) && setChatMsg('');
-            
             const setGame = (g) => db.ref(`salas/${roomId}`).update({ gameState: g });
 
-            const ChatGlobal = roomId ? (
-                <>
-                    <div className="chat-btn" onClick={()=>setShowChat(!showChat)}>💬</div>
-                    {showChat && <div className="chat-overlay"><div style={{flex:1,overflowY:'auto',padding:20,textAlign:'left',color:'white'}}>{msgs.map((m,i)=><div key={i}><b>{m.user}:</b> {m.text}</div>)}</div><div style={{display:'flex',padding:10,background:'#111'}}><input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0,flex:1}} placeholder="..." /><button onClick={sendC} style={{width:'auto',margin:0,marginLeft:10}}>➤</button></div><button onClick={()=>setShowChat(false)} style={{margin:0,borderRadius:0,background:'#333'}}>CERRAR</button></div>}
-                </>
-            ) : null;
+            const ChatGlobal = roomId ? <><div className="chat-btn" onClick={()=>setShowChat(!showChat)}>💬</div>{showChat && <div className="chat-overlay"><div style={{flex:1,overflowY:'auto',padding:20,textAlign:'left',color:'white'}}>{msgs.map((m,i)=><div key={i}><b>{m.user}:</b> {m.text}</div>)}</div><div style={{display:'flex',padding:10,background:'#111'}}><input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0,flex:1}} placeholder="..." /><button onClick={sendC} style={{width:'auto',margin:0,marginLeft:10}}>➤</button></div><button onClick={()=>setShowChat(false)} style={{margin:0,borderRadius:0,background:'#333'}}>CERRAR</button></div>}</> : null;
 
             if (view === 'lobby') return <div className="card"><h1>Parejas Ultimate ❤️</h1><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tu Nombre" /><button onClick={create}>Crear Sala</button><br/><br/><input id="c" placeholder="CÓDIGO" style={{textTransform:'uppercase'}} /><button style={{background:'#6366f1'}} onClick={()=>join(document.getElementById('c').value.toUpperCase())}>Unirse</button></div>;
-
             if (view === 'waiting') return <div className="card"><h2>{roomId}</h2><p className="waiting-pulse">Esperando a tu pareja...</p></div>;
-
             if (!roomData) return <div className="card">Cargando...</div>;
             const playerRole = roomData.players.host.name === playerName ? 'host' : 'guest';
             
             return (
                 <div>
                     {ChatGlobal}
-                    
                     {roomData.gameState === 'MENU' && (
                         <div className="card">
-                            <h3>Elige a qué jugar</h3>
-                            <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES PRO</button>
-                            <button className="game-btn btn-dial" onClick={()=>setGame('DIAL')}>🌊 EL DIAL (180º)</button>
+                            <h3>Elige Juego</h3>
+                            <button className="game-btn btn-cats" onClick={()=>setGame('CAT')}>🚫 NO DIGAS LO MISMO</button>
+                            <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES</button>
+                            <button className="game-btn btn-dial" onClick={()=>setGame('DIAL')}>🌊 EL DIAL</button>
                         </div>
                     )}
-
+                    {roomData.gameState === 'CAT' && <CategoryGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                     {roomData.gameState === 'COLOR' && <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                     {roomData.gameState === 'DIAL' && <DialGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                 </div>
