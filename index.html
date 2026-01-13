@@ -2,202 +2,312 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Súper Pack Parejas PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Couple Games</title>
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2919/2919601.png">
+    
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
     <style>
-        :root { --bg: #0d1117; --accent: #58a6ff; --pink: #f85149; --card: #161b22; --green: #238636; }
-        body { font-family: sans-serif; background: var(--bg); color: #c9d1d9; margin: 0; padding: 10px; text-align: center; }
-        .card { background: var(--card); border: 1px solid #30363d; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .hidden { display: none; }
-        button { background: var(--green); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; margin: 5px; width: 90%; cursor: pointer; }
-        input[type=text] { background: #010409; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; width: 85%; margin: 5px; }
+        /* ESTILO TIPO APP NATIVA */
+        :root { --bg: #000; --card: #151515; --accent: #0A84FF; --pink: #FF375F; --text: #fff; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         
-        /* Colores Ampliado */
-        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0; max-height: 300px; overflow-y: auto; padding: 5px; background: #000; border-radius: 8px; }
-        .color-box { height: 45px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; border-radius: 4px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
+            background: var(--bg); color: var(--text); 
+            margin: 0; padding: env(safe-area-inset-top) 10px 20px 10px; 
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
 
-        /* Categorías con tiempo */
-        #timer { font-size: 3em; font-weight: bold; color: var(--pink); margin: 10px 0; }
-        .results-box { display: flex; justify-content: space-around; font-size: 1.2em; font-weight: bold; margin-top: 10px; min-height: 1.5em; }
+        /* BARRA DE NAVEGACIÓN INFERIOR (TIPO INSTAGRAM/TIKTOK) */
+        .tab-bar {
+            display: flex; justify-content: space-around; align-items: center;
+            background: #111; border-top: 1px solid #222;
+            padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100;
+        }
+        .tab-btn { background: none; border: none; color: #555; font-size: 0.7em; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .tab-btn.active { color: var(--accent); }
+        .tab-icon { font-size: 1.4em; }
 
-        /* Dial */
-        .dial-box { position: relative; width: 200px; height: 100px; margin: 10px auto; border: 3px solid #30363d; border-radius: 100px 100px 0 0; background: #000; overflow: hidden; }
-        #pointer { position: absolute; bottom: 0; left: 50%; width: 3px; height: 100%; background: var(--pink); transform-origin: bottom; transform: rotate(0deg); transition: transform 0.2s; z-index: 5; }
-        #target { position: absolute; bottom: 0; left: 50%; width: 40px; height: 100%; background: rgba(88,166,255,0.4); transform-origin: bottom; display: none; }
+        /* PANTALLAS */
+        .screen { display: none; height: 100%; overflow-y: auto; padding-bottom: 80px; }
+        .screen.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { margin: 10px 0; font-size: 1.5em; letter-spacing: -0.5px; }
+        .card { background: var(--card); padding: 20px; border-radius: 18px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+        /* CONTROLES */
+        button { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 1em; width: 100%; margin-top: 10px; active: scale(0.98); transition: transform 0.1s; }
+        input { background: #222; border: none; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 1em; margin-bottom: 10px; user-select: text; }
         
-        .nav-btn { background: #30363d; width: 45%; font-size: 0.8em; }
-        #chat { height: 80px; overflow-y: auto; background: #010409; padding: 8px; font-size: 0.8em; text-align: left; border-radius: 6px; margin: 5px 0; border: 1px dotted #333; }
+        /* DIAL (MEJORADO) */
+        .dial-wrapper { position: relative; width: 280px; height: 140px; margin: 20px auto; overflow: hidden; }
+        .dial-bg { width: 280px; height: 140px; background: #222; border-radius: 150px 150px 0 0; border: 4px solid #333; position: relative; overflow: hidden; }
+        .zone-layer { position: absolute; bottom: 0; left: 50%; height: 100%; transform-origin: bottom; transform: translateX(-50%) rotate(0deg); opacity: 0; transition: opacity 0.3s; }
+        .zone-color { position: absolute; bottom: 0; left: 50%; height: 100%; transform: translateX(-50%); transform-origin: bottom; }
+        
+        /* PUNTUACIONES VISUALES */
+        .z4 { width: 14px; background: #32D74B; z-index: 5; } /* 4 puntos */
+        .z3 { width: 44px; background: #FFD60A; z-index: 4; } /* 3 puntos */
+        .z2 { width: 90px; background: #FF9F0A; z-index: 3; } /* 2 puntos */
+        
+        #pointer { position: absolute; bottom: 0; left: 50%; width: 4px; height: 130px; background: var(--pink); border-radius: 4px; transform-origin: bottom; transform: translateX(-50%) rotate(0deg); transition: transform 0.1s; z-index: 10; }
+
+        /* PALETA COLORES */
+        .grid-colors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .c-box { aspect-ratio: 1; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* CHAT */
+        .chat-bubble { background: #222; padding: 8px 12px; border-radius: 16px; margin: 5px 0; max-width: 80%; width: fit-content; font-size: 0.95em; }
+        .chat-bubble.me { background: var(--accent); color: white; align-self: flex-end; margin-left: auto; }
+        
+        .status-dot { width: 10px; height: 10px; background: red; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .connected .status-dot { background: #32D74B; }
     </style>
 </head>
 <body>
 
-    <div id="setup" class="card">
-        <h2>🔗 Conectar Pareja</h2>
-        <p style="font-size:0.8em">Tu ID: <b id="my-id">...</b></p>
-        <input type="text" id="join-id" placeholder="Pega el ID de tu pareja">
-        <button onclick="connect(document.getElementById('join-id').value)">Conectar ahora</button>
+    <div id="screen-login" class="screen active" style="display:flex; flex-direction:column; justify-content:center;">
+        <div class="card" style="text-align:center;">
+            <h1>❤️ Couple Play</h1>
+            <p style="color:#777">Vuestra App Privada</p>
+            <div style="background:#222; padding:10px; border-radius:10px; margin:20px 0;">
+                <p style="font-size:0.8em; margin-bottom:5px; color:#aaa;">TU ID:</p>
+                <h2 id="my-id" style="color:var(--accent); letter-spacing:1px;">...</h2>
+            </div>
+            <input type="text" id="partner-id" placeholder="Pega aquí el ID de tu pareja">
+            <button onclick="connect()">CONECTAR</button>
+        </div>
     </div>
 
-    <div id="game-container" class="hidden">
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 10px;">
-            <button class="nav-btn" onclick="showGame('w-game')">Dial</button>
-            <button class="nav-btn" onclick="showGame('c-game')">Café/Té</button>
-            <button class="nav-btn" onclick="showGame('clr-game')">40 Colores</button>
-            <button class="nav-btn" onclick="showGame('cat-game')">Categorías (5s)</button>
-        </div>
-
-        <div id="w-game" class="game-section">
-            <div class="card">
-                <h3>🎡 Dial Wavelength</h3>
-                <div class="dial-box"><div id="target"></div><div id="pointer"></div></div>
-                <input type="range" style="width:80%" min="-85" max="85" value="0" oninput="moveDial(this.value)">
-                <button onclick="newTarget()">Nuevo Objetivo</button>
-                <button style="background:var(--pink)" onclick="revealTarget()">Revelar</button>
-            </div>
-        </div>
-
-        <div id="c-game" class="game-section hidden">
-            <div class="card">
-                <h3>☕ Café o Té</h3>
-                <input type="text" id="secret-word" placeholder="Palabra secreta (solo la ves tú)">
-                <button onclick="sendSecret()">Fijar Palabra</button>
-                <p id="secret-notif" style="font-size:0.8em; color:var(--accent)"></p>
-            </div>
-        </div>
-
-        <div id="clr-game" class="game-section hidden">
-            <div class="card">
-                <h3>🎨 Adivina el Color (Difícil)</h3>
-                <div id="color-grid" class="color-grid"></div>
-                <p id="color-info" style="font-size:0.8em">Selecciona uno y da la pista por el chat.</p>
-            </div>
-        </div>
-
-        <div id="cat-game" class="game-section hidden">
-            <div class="card">
-                <h3>🚫 No Digas lo Mismo</h3>
-                <h4 id="current-cat" style="color:var(--accent); margin:0;">Pulsa para categoría</h4>
-                <div id="timer">--</div>
-                <input type="text" id="cat-input" placeholder="Escribe tu respuesta YA">
-                <button id="timer-btn" onclick="startCountdown()">⏳ Empezar 5 segundos</button>
-                <div class="results-box">
-                    <div id="res-tu">?</div>
-                    <div id="res-pareja">?</div>
+    <div id="screen-dial" class="screen">
+        <h2>🎡 Dial</h2>
+        <div class="card">
+            <div class="dial-wrapper">
+                <div class="dial-bg">
+                    <div id="target-zone" class="zone-layer">
+                        <div class="zone-color z2"></div>
+                        <div class="zone-color z3"></div>
+                        <div class="zone-color z4"></div>
+                    </div>
+                    <div id="pointer"></div>
                 </div>
-                <p id="match-result" style="font-weight:bold; margin-top:10px;"></p>
             </div>
+            <input type="range" min="-85" max="85" value="0" oninput="moveDial(this.value)">
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="newTarget()" style="background:#333">Nuevo</button>
+                <button onclick="reveal()">Revelar</button>
+            </div>
+        </div>
+        <div id="chat-dial" style="padding:0 10px;"></div>
+    </div>
+
+    <div id="screen-colors" class="screen">
+        <h2>🎨 Paleta</h2>
+        <p style="color:#777; font-size:0.9em; margin-bottom:10px;">Elige un color y da una pista.</p>
+        <div class="card">
+            <div class="grid-colors" id="color-grid"></div>
+        </div>
+    </div>
+
+    <div id="screen-games" class="screen">
+        <h2>⚡ Rápidos</h2>
+        
+        <div class="card">
+            <h3>☕ Adivina la palabra</h3>
+            <input type="text" id="secret-word" placeholder="Escribe tu palabra secreta">
+            <button onclick="setSecret()">Fijar Palabra</button>
+            <p id="secret-status" style="font-size:0.8em; color:var(--accent); margin-top:5px;"></p>
         </div>
 
         <div class="card">
-            <div id="chat"></div>
-            <input type="text" id="chat-in" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendMsg()">
-            <button onclick="sendMsg()">Enviar Mensaje</button>
+            <h3>🧠 No digas lo mismo</h3>
+            <h1 id="cat-timer" style="font-size:3em; text-align:center; margin:10px 0; color:var(--pink)">--</h1>
+            <p id="cat-topic" style="text-align:center; font-weight:bold; color:#aaa;">Pulsa para empezar</p>
+            <button onclick="startCat()">Cuenta Atrás (5s)</button>
         </div>
     </div>
 
+    <div id="screen-chat" class="screen">
+        <h2>💬 Chat</h2>
+        <div id="chat-history" style="height:60vh; overflow-y:auto; display:flex; flex-direction:column; padding-bottom:20px;"></div>
+        <div style="display:flex; gap:10px; position:fixed; bottom:80px; left:10px; right:10px;">
+            <input type="text" id="chat-input" placeholder="Mensaje..." style="margin:0;">
+            <button style="width:50px; margin:0;" onclick="sendChat()">→</button>
+        </div>
+    </div>
+
+    <div id="tab-bar" class="tab-bar" style="display:none;">
+        <button class="tab-btn active" onclick="go('dial')"><span class="tab-icon">🎡</span>Dial</button>
+        <button class="tab-btn" onclick="go('colors')"><span class="tab-icon">🎨</span>Color</button>
+        <button class="tab-btn" onclick="go('games')"><span class="tab-icon">⚡</span>Juegos</button>
+        <button class="tab-btn" onclick="go('chat')"><span class="tab-icon">💬</span>Chat</button>
+    </div>
+
 <script>
-    const peer = new Peer();
+    const peer = new Peer({debug: 1}); // Modo debug para ver errores
     let conn;
-    let cats = ["Fruta", "País", "Marca", "Famoso", "Animal", "Película", "Color", "Deporte", "Comida", "Objeto", "Parte del cuerpo", "Cantante", "Ciudad", "Ropa", "Postre"];
-    let catIdx = 0;
+    let myId = "";
 
-    peer.on('open', id => { document.getElementById('my-id').innerText = id; });
-    peer.on('connection', c => { conn = c; setupConn(); });
-    function connect(id) { conn = peer.connect(id); setupConn(); }
+    // INICIALIZACIÓN
+    peer.on('open', id => { 
+        myId = id; 
+        document.getElementById('my-id').innerText = id; 
+    });
 
-    function setupConn() {
-        document.getElementById('setup').classList.add('hidden');
-        document.getElementById('game-container').classList.remove('hidden');
-        genColors(40);
+    peer.on('connection', c => { 
+        conn = c; 
+        setupConnection(); 
+    });
+
+    peer.on('error', err => {
+        alert("Error de conexión: " + err.type + ". Intenta recargar.");
+    });
+
+    function connect() {
+        const partner = document.getElementById('partner-id').value.trim();
+        if(!partner) return alert("Pega el ID de tu pareja primero");
+        conn = peer.connect(partner);
+        setupConnection();
+    }
+
+    function setupConnection() {
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('tab-bar').style.display = 'flex';
+        go('dial');
+        generateColors();
         
-        conn.on('data', data => {
-            if(data.type === 'dial') document.getElementById('pointer').style.transform = `translateX(-50%) rotate(${data.val}deg)`;
-            if(data.type === 'chat') log("Pareja", data.msg);
-            if(data.type === 'reveal') { document.getElementById('target').style.display = 'block'; document.getElementById('target').style.transform = `translateX(-50%) rotate(${data.val}deg)`; }
-            if(data.type === 'cat-sync') document.getElementById('current-cat').innerText = data.val;
-            if(data.type === 'secret') document.getElementById('secret-notif').innerText = "¡Tu pareja ya pensó la palabra!";
-            if(data.type === 'start-timer') runLocalTimer();
-            if(data.type === 'cat-res') { window.partnerWord = data.val; checkMatch(); }
+        conn.on('data', data => handleData(data));
+        conn.on('open', () => {
+            sendSys("¡Conectado con tu pareja!");
         });
     }
 
-    function showGame(id) {
-        document.querySelectorAll('.game-section').forEach(s => s.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    // Dial
-    function moveDial(v) { document.getElementById('pointer').style.transform = `translateX(-50%) rotate(${v}deg)`; conn.send({type:'dial', val:v}); }
-    let tAngle = 0;
-    function newTarget() { tAngle = Math.floor(Math.random()*160)-80; document.getElementById('target').style.display='block'; document.getElementById('target').style.transform = `translateX(-50%) rotate(${tAngle}deg)`; }
-    function revealTarget() { conn.send({type:'reveal', val:tAngle}); }
-
-    // 40 Colores
-    function genColors(num) {
-        const grid = document.getElementById('color-grid');
-        grid.innerHTML = '';
-        for(let i=0; i<num; i++) {
-            let c = `hsl(${Math.random()*360}, 65%, 50%)`;
-            let b = document.createElement('div');
-            b.className = 'color-box'; b.style.backgroundColor = c;
-            b.onclick = () => { log("SISTEMA", "Elegiste este color. Da tu pista."); conn.send({type:'chat', msg: "He elegido un color..."}); };
-            grid.appendChild(b);
+    // MANEJO DE DATOS RECIBIDOS
+    function handleData(d) {
+        if(d.type === 'dial') {
+            document.getElementById('pointer').style.transform = `translateX(-50%) rotate(${d.val}deg)`;
+        }
+        if(d.type === 'reveal') {
+            const z = document.getElementById('target-zone');
+            z.style.transform = `translateX(-50%) rotate(${d.val}deg)`;
+            z.style.opacity = 1;
+        }
+        if(d.type === 'chat') addMsg(d.msg, false);
+        if(d.type === 'cat') {
+            document.getElementById('cat-topic').innerText = d.val;
+            runTimer();
+        }
+        if(d.type === 'secret') {
+            document.getElementById('secret-status').innerText = "¡Pareja lista! Pregunta...";
+            addMsg("He fijado mi palabra secreta. ¡Adivina!", false);
         }
     }
 
-    // Categorías con Cuenta Atrás
-    function startCountdown() {
-        let c = cats[catIdx % cats.length];
-        document.getElementById('current-cat').innerText = c;
-        conn.send({type:'cat-sync', val:c});
-        conn.send({type:'start-timer'});
-        runLocalTimer();
-        catIdx++;
+    // NAVEGACIÓN
+    function go(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('screen-'+screenId).classList.add('active');
+        // Activar icono
+        const btnIndex = ['dial','colors','games','chat'].indexOf(screenId);
+        document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
     }
 
-    function runLocalTimer() {
-        let sec = 5;
-        document.getElementById('res-tu').innerText = "?";
-        document.getElementById('res-pareja').innerText = "?";
-        document.getElementById('match-result').innerText = "";
-        window.partnerWord = null;
-        const t = document.getElementById('timer');
-        const interval = setInterval(() => {
-            t.innerText = sec;
-            sec--;
-            if(sec < 0) {
-                clearInterval(interval);
-                t.innerText = "¡YA!";
-                const myWord = document.getElementById('cat-input').value.trim().toLowerCase();
-                document.getElementById('res-tu').innerText = myWord || "(vacío)";
-                conn.send({type:'cat-res', val: myWord});
-                window.myFinished = myWord;
-                checkMatch();
-            }
+    // FUNCIONES DIAL
+    function moveDial(val) {
+        document.getElementById('pointer').style.transform = `translateX(-50%) rotate(${val}deg)`;
+        if(conn) conn.send({type:'dial', val:val});
+    }
+    function newTarget() {
+        const angle = Math.floor(Math.random() * 160) - 80;
+        const z = document.getElementById('target-zone');
+        z.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        z.style.opacity = 0; // Oculto al principio
+        // Enviamos el objetivo pero oculto, o lo guardamos para revelar luego
+        // En este modo simple, el que da a "Nuevo" es el Guía.
+        localStorage.setItem('target', angle);
+        alert("Objetivo fijado. ¡Da la pista!");
+    }
+    function reveal() {
+        const angle = localStorage.getItem('target');
+        if(angle && conn) {
+            conn.send({type:'reveal', val:angle});
+            const z = document.getElementById('target-zone');
+            z.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            z.style.opacity = 1;
+        }
+    }
+
+    // COLORES
+    function generateColors() {
+        const grid = document.getElementById('color-grid');
+        grid.innerHTML = "";
+        for(let i=0; i<30; i++) {
+            let hue = Math.floor(Math.random()*360);
+            let div = document.createElement('div');
+            div.className = 'c-box';
+            div.style.background = `hsl(${hue}, 70%, 50%)`;
+            div.onclick = () => {
+                addMsg("He elegido un color.", true);
+                if(conn) conn.send({type:'chat', msg:"He elegido un color. ¡Adivina!"});
+            };
+            grid.appendChild(div);
+        }
+    }
+
+    // JUEGOS RÁPIDOS
+    function startCat() {
+        const topics = ["Comida", "País", "Animal", "Marca", "Objeto", "Famoso"];
+        const t = topics[Math.floor(Math.random()*topics.length)];
+        document.getElementById('cat-topic').innerText = t;
+        if(conn) conn.send({type:'cat', val:t});
+        runTimer();
+    }
+    function runTimer() {
+        let s = 5;
+        const el = document.getElementById('cat-timer');
+        const i = setInterval(() => {
+            el.innerText = s;
+            s--;
+            if(s<0) { clearInterval(i); el.innerText = "¡YA!"; }
         }, 1000);
     }
-
-    function checkMatch() {
-        if(window.partnerWord !== null && window.myFinished !== undefined) {
-            document.getElementById('res-pareja').innerText = window.partnerWord || "(vacío)";
-            const res = document.getElementById('match-result');
-            if(window.myFinished === window.partnerWord && window.myFinished !== "") {
-                res.innerText = "❌ ¡COINCIDENCIA! PERDÉIS";
-                res.style.color = "var(--pink)";
-            } else {
-                res.innerText = "✅ ¡SALVADOS! No habéis coincidido";
-                res.style.color = "var(--green)";
-            }
-            document.getElementById('cat-input').value = "";
-            delete window.myFinished;
-        }
+    function setSecret() {
+        document.getElementById('secret-word').value = "";
+        document.getElementById('secret-status').innerText = "Palabra guardada.";
+        if(conn) conn.send({type:'secret'});
     }
 
-    // Chat
-    function sendSecret() { conn.send({type:'secret'}); document.getElementById('secret-notif').innerText = "Palabra fijada."; }
-    function sendMsg() { let i = document.getElementById('chat-in'); log("Tú", i.value); conn.send({type:'chat', msg:i.value}); i.value=""; }
-    function log(u, m) { const d = document.getElementById('chat'); d.innerHTML += `<div><b>${u}:</b> ${m}</div>`; d.scrollTop = d.scrollHeight; }
+    // CHAT
+    function sendChat() {
+        const input = document.getElementById('chat-input');
+        const txt = input.value.trim();
+        if(!txt) return;
+        addMsg(txt, true);
+        if(conn) conn.send({type:'chat', msg:txt});
+        input.value = "";
+    }
+    function sendSys(txt) { addMsg(txt, false); }
+    
+    function addMsg(txt, isMe) {
+        const box = document.getElementById('chat-history');
+        const d = document.createElement('div');
+        d.className = `chat-bubble ${isMe ? 'me' : ''}`;
+        d.innerText = txt;
+        box.appendChild(d);
+        box.scrollTop = box.scrollHeight;
+        
+        // También añadir al chat de la pestaña "Chat"
+        // (En esta versión simple, compartimos el historial visual)
+    }
 </script>
 </body>
 </html>
