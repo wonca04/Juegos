@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Pack ❤️</title>
+    <title>Juegos Parejas Ultimate ❤️</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -16,7 +16,7 @@
         * { box-sizing: border-box; touch-action: manipulation; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #fce7f3; margin: 0; padding: 10px; text-align: center; }
         
-        .card { background: #1e1e1e; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 600px; margin: 10px auto; border: 1px solid #333; }
+        .card { background: #1e1e1e; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 600px; margin: 10px auto; border: 1px solid #333; position: relative; z-index: 1; }
         
         button { width: 100%; padding: 14px; background: #be185d; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 15px; transition: 0.2s; cursor: pointer; }
         button:disabled { background: #444; color: #888; opacity: 0.5; }
@@ -25,19 +25,65 @@
         input { width: 100%; padding: 12px; background: #333; border: 2px solid #555; border-radius: 10px; color: white; text-align: center; font-size: 16px; outline: none; margin-bottom: 10px; }
         input:focus { border-color: #be185d; }
 
-        /* ESTILOS MENU SELECCIÓN */
+        /* MENU SELECCIÓN */
         .game-btn { padding: 20px; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid transparent; }
         .btn-colors { background: linear-gradient(45deg, #ef4444, #eab308, #3b82f6); }
         .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
 
-        /* ESTILOS DIAL (WAVELENGTH) */
-        .dial-container { position: relative; width: 300px; height: 160px; margin: 20px auto; overflow: hidden; }
-        .dial-bg { width: 300px; height: 300px; background: conic-gradient(from 270deg, #374151 0deg, #374151 180deg, transparent 180deg); border-radius: 50%; position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
-        .target-zone { position: absolute; top: 0; left: 0; width: 300px; height: 300px; border-radius: 50%; background: conic-gradient(from 270deg, transparent 0deg, transparent calc(var(--deg) - 15deg), #fbbf24 calc(var(--deg) - 15deg), #f59e0b calc(var(--deg) - 5deg), #ef4444 calc(var(--deg) - 2deg), #ef4444 calc(var(--deg) + 2deg), #f59e0b calc(var(--deg) + 5deg), #fbbf24 calc(var(--deg) + 15deg), transparent calc(var(--deg) + 15deg)); transform: rotate(-90deg); opacity: 0; transition: opacity 0.5s; }
+        /* ============================
+           ESTILOS DIAL (ARREGLADO)
+           ============================ */
+        .dial-wrapper { position: relative; width: 320px; height: 170px; margin: 20px auto; overflow: hidden; display: flex; justify-content: center; align-items: flex-end; }
+        
+        /* El Semicírculo Gris de Fondo */
+        .dial-bg { 
+            width: 300px; height: 150px; 
+            background: #374151; 
+            border-top-left-radius: 150px; 
+            border-top-right-radius: 150px; 
+            border-bottom: 2px solid #555;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* La Zona de Puntos (Con Franjas Separadas) */
+        .target-wedge {
+            position: absolute; bottom: 0; left: 50%; width: 300px; height: 300px; margin-left: -150px; border-radius: 50%;
+            /* El gradiente cónico crea las franjas */
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                transparent calc(var(--deg) - 22deg),
+                #facc15 calc(var(--deg) - 22deg), /* 2 pts start (Amarillo) */
+                #facc15 calc(var(--deg) - 14deg),
+                #f97316 calc(var(--deg) - 14deg), /* 3 pts start (Naranja) */
+                #f97316 calc(var(--deg) - 6deg),
+                #be185d calc(var(--deg) - 6deg),  /* 4 pts start (Rosa Centro) */
+                #be185d calc(var(--deg) + 6deg),
+                #f97316 calc(var(--deg) + 6deg),  /* 3 pts end */
+                #f97316 calc(var(--deg) + 14deg),
+                #facc15 calc(var(--deg) + 14deg), /* 2 pts end */
+                #facc15 calc(var(--deg) + 22deg),
+                transparent calc(var(--deg) + 22deg)
+            );
+            mask-image: linear-gradient(to top, black 50%, transparent 50%); /* Cortar para que sea semicírculo */
+            -webkit-mask-image: linear-gradient(to top, black 50%, transparent 50%);
+            opacity: 0; transition: opacity 0.5s; pointer-events: none;
+        }
         .visible { opacity: 1; }
-        .needle { width: 4px; height: 140px; background: #ef4444; position: absolute; bottom: -10px; left: 50%; transform-origin: bottom center; margin-left: -2px; transition: transform 0.1s linear; border-radius: 2px; box-shadow: 0 0 5px red; }
-        .knob { width: 30px; height: 30px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); z-index: 20; }
-        .topic-card { background: #312e81; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 10px; }
+
+        /* Aguja */
+        .needle-pivot { position: absolute; bottom: 0; left: 50%; width: 0; height: 0; z-index: 10; }
+        .needle { 
+            width: 4px; height: 140px; background: #ef4444; 
+            position: absolute; bottom: 0; left: -2px; 
+            transform-origin: bottom center; 
+            border-radius: 2px; box-shadow: 0 0 5px rgba(255,0,0,0.8);
+            transition: transform 0.1s cubic-bezier(0,0,0.2,1); /* Movimiento suave */
+        }
+        .knob { width: 20px; height: 20px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); z-index: 20; border: 2px solid #ef4444; }
+
+        .topic-card { background: #312e81; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
 
         /* ESTILOS COLORES */
         .grid-wrapper { overflow-x: auto; padding-bottom: 10px; display: flex; justify-content: center; }
@@ -48,13 +94,11 @@
         .guess-mark-current { box-shadow: 0 0 0 2px white, 0 0 8px #be185d; z-index: 10; transform: scale(1.2); }
         .hint-display { background: #333; padding: 8px; border-radius: 6px; font-style: italic; border-left: 3px solid #be185d; text-align: left; margin: 5px 0; font-size: 14px; }
         
-        /* NOTIFICACIONES */
-        .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; font-size: 14px; }
+        /* CHAT FLOTANTE GLOBAL */
+        .chat-btn { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 9999; border: 2px solid white; box-shadow: 0 4px 10px black; cursor: pointer; font-size: 20px; }
+        .chat-overlay { position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; background: #222; border-top: 2px solid #be185d; z-index: 9998; display: flex; flex-direction: column; box-shadow: 0 -10px 50px rgba(0,0,0,0.5); }
+        .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        
-        /* CHAT */
-        .chat-btn { position: fixed; top: 10px; right: 10px; width: 40px; height: 40px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; border: 2px solid white; box-shadow: 0 2px 5px black; }
-        .chat-overlay { position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; background: #222; border-top: 2px solid #be185d; z-index: 99; display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
@@ -77,10 +121,23 @@
         const db = firebase.database();
 
         // ==========================================
-        // COMPONENTE 1: JUEGO DIAL (Wavelength)
+        // 0. LISTA DE CATEGORÍAS (AÑADE AQUÍ MÁS)
         // ==========================================
-        const TOPICS = [["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"], ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"], ["Basura", "Tesoro"], ["Blando", "Duro"]];
+        const TOPICS = [
+            ["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"],
+            ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"],
+            ["Basura", "Tesoro"], ["Blando", "Duro"], ["Sano", "Insalubre"], ["Legal", "Ilegal"],
+            ["Poco ético", "Ético"], ["Placer", "Dolor"], ["Cierto", "Falso"], ["Normal", "Raro"],
+            ["Talento", "Habilidad"], ["Ciencia ficción", "Fantasía"], ["Sobrevalorado", "Infravalorado"],
+            ["Temporal", "Eterno"], ["Local", "Global"], ["Ruidoso", "Silencioso"], ["Picante", "Dulce"],
+            ["Trabajo", "Hobby"], ["Peligroso", "Seguro"], ["Oscuro", "Luminoso"], ["Pesado", "Ligero"],
+            ["Retro", "Moderno"], ["Físico", "Mental"], ["Niño", "Adulto"], ["Limpio", "Sucio"],
+            ["Rápido", "Lento"], ["Necesario", "Opcional"], ["Triste", "Feliz"], ["Barato", "Lujoso"]
+        ];
 
+        // ==========================================
+        // COMPONENTE 1: EL DIAL (Wavelength)
+        // ==========================================
         const DialGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.dialGame || {};
             const isHostTurn = game.turn === 'host';
@@ -90,46 +147,64 @@
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                // Angulo entre 10 y 170 grados (semicírculo)
                 const target = Math.floor(Math.random() * 160) + 10; 
                 db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
 
             const sendHint = (txt) => txt && db.ref(`salas/${roomId}/dialGame`).update({ hint: txt, phase: 'GUESSING' });
+            
+            // Slider de 0 a 180 grados
             const moveNeedle = (val) => iAmGuesser && game.phase === 'GUESSING' && db.ref(`salas/${roomId}/dialGame`).update({ needleAngle: parseInt(val) });
+            
             const confirmGuess = () => {
                 let pts = 0, diff = Math.abs(game.targetAngle - game.needleAngle);
-                if (diff <= 4) pts = 4; else if (diff <= 12) pts = 3; else if (diff <= 22) pts = 2;
+                if (diff <= 6) pts = 4; else if (diff <= 14) pts = 3; else if (diff <= 22) pts = 2;
                 db.ref(`salas/${roomId}/dialGame`).update({ phase: 'RESULT', score: pts });
             };
 
-            if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>VOLVER AL MENÚ</button></div>;
+            if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
+
+            // Rotación visual: 0 input = -90deg CSS (Izquierda), 90 input = 0deg CSS (Arriba), 180 input = 90deg CSS (Derecha)
+            const cssRot = game.needleAngle - 90;
 
             return (
                 <div className="card">
                     <button onClick={onBack} style={{padding:5, fontSize:12, width:'auto', background:'transparent', border:'1px solid #555', float:'right'}}>SALIR</button>
                     <div style={{clear:'both', marginBottom:10, fontSize:12, color:'#aaa'}}>TURNO: {isHostTurn ? roomData.players.host.name : roomData.players.guest.name}</div>
                     
-                    <div className="topic-card"><span style={{color:'#93c5fd'}}>{game.topic[0]}</span><span>vs</span><span style={{color:'#fda4af'}}>{game.topic[1]}</span></div>
+                    <div className="topic-card">
+                        <span style={{color:'#93c5fd', width:'45%', textAlign:'left'}}>⬅️ {game.topic[0]}</span>
+                        <span style={{color:'#fda4af', width:'45%', textAlign:'right'}}>{game.topic[1]} ➡️</span>
+                    </div>
 
-                    <div className="dial-container">
+                    <div className="dial-wrapper">
                         <div className="dial-bg"></div>
-                        <div className={`target-zone ${(iAmPsychic || game.phase === 'RESULT') ? 'visible' : ''}`} style={{ '--deg': `${game.targetAngle}deg` }}></div>
-                        <div className="needle" style={{ transform: `rotate(${game.needleAngle - 90}deg)` }}></div>
+                        {/* El target zone rota basado en el ángulo objetivo, pero ajustamos para coordenadas CSS (-90 es el centro) */}
+                        <div className={`target-wedge ${(iAmPsychic || game.phase === 'RESULT') ? 'visible' : ''}`} style={{ '--deg': `${game.targetAngle - 90}deg` }}></div>
+                        
+                        <div className="needle-pivot">
+                             <div className="needle" style={{ transform: `rotate(${cssRot}deg)` }}></div>
+                        </div>
                         <div className="knob"></div>
                     </div>
 
                     {iAmPsychic && (
                         <div>
-                            {game.phase === 'HINTING' && <><input id="h" placeholder="Tu pista..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR PISTA</button></>}
+                            {game.phase === 'HINTING' && <><p style={{color:'#be185d', fontSize:14}}>Tú ves la zona. ¡Da una pista!</p><input id="h" placeholder="Tu pista..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR PISTA</button></>}
                             {game.phase === 'GUESSING' && <p className="waiting-pulse">Tu pareja está moviendo la aguja...</p>}
-                            {game.phase === 'RESULT' && <p>Puntuación: {game.score}</p>}
+                            {game.phase === 'RESULT' && <p>Esperando a que inicien...</p>}
                         </div>
                     )}
                     {iAmGuesser && (
                         <div>
                             {game.phase === 'HINTING' && <p className="waiting-pulse">Esperando pista...</p>}
-                            {game.phase === 'GUESSING' && <><div className="hint-display" style={{textAlign:'center'}}>"{game.hint}"</div><input type="range" min="0" max="180" value={game.needleAngle} onChange={e=>moveNeedle(e.target.value)} style={{width:'100%', accentColor:'#ef4444'}} /><button onClick={confirmGuess} style={{background:'#ef4444'}}>BLOQUEAR</button></>}
-                            {game.phase === 'RESULT' && <><div style={{fontSize:40, color:'#fbbf24'}}>+{game.score}</div><button onClick={startTurn}>SIGUIENTE</button></>}
+                            {game.phase === 'GUESSING' && <>
+                                <div className="hint-display" style={{textAlign:'center', fontSize:18}}>"{game.hint}"</div>
+                                <input type="range" min="0" max="180" value={game.needleAngle} onChange={e=>moveNeedle(e.target.value)} style={{width:'100%', accentColor:'#ef4444', height:30}} />
+                                <button onClick={confirmGuess} style={{background:'#ef4444'}}>BLOQUEAR</button>
+                            </>}
+                            {game.phase === 'RESULT' && <><div style={{fontSize:50, color:'#fbbf24', fontWeight:900}}>+{game.score}</div><button onClick={startTurn}>SIGUIENTE</button></>}
                         </div>
                     )}
                 </div>
@@ -173,7 +248,7 @@
                 db.ref(`salas/${roomId}/colorGame`).update(update);
             };
 
-            if (!game.turn) return <div className="card"><h2>🎨 Colores</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>VOLVER AL MENÚ</button></div>;
+            if (!game.turn) return <div className="card"><h2>🎨 Colores</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
             if (!game.target) return <div className="card">Cargando...</div>;
 
             return (
@@ -185,7 +260,7 @@
                         <div>
                             {game.step < 5 && <div style={{background:'#333', padding:5, marginBottom:5}}><div className="coord-box">{game.target.code}</div><div style={{height:15, background:getColor(game.target.r, game.target.c), width:'100%'}}></div></div>}
                             {(game.step===1 || game.step===3) && <><input id="hin" placeholder={`Pista ${game.step===1?1:2}...`} /><button onClick={()=>sendHint(document.getElementById('hin').value)}>ENVIAR</button></>}
-                            {(game.step===2 || game.step===4) && <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor?'#10b981':'#444'}}>CONFIRMAR ELECCIÓN</button>}
+                            {(game.step===2 || game.step===4) && <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor?'#10b981':'#444'}}>{game.currentCursor ? 'CONFIRMAR ELECCIÓN' : 'ESPERANDO...'}</button>}
                         </div>
                     )}
                     {iAmGuesser && (
@@ -197,7 +272,7 @@
                     )}
                     {game.step === 5 && (
                         <div><div style={{fontSize:40, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div><div style={{display:'flex',justifyContent:'center', gap:5}}><div className="coord-box" style={{fontSize:14}}>{game.target.code}</div><div style={{width:20, height:20, background:getColor(game.target.r, game.target.c)}}></div></div>
-                        {iAmGuesser ? <button onClick={startTurn}>SIGUIENTE</button> : <p className="waiting-pulse">Esperando...</p>}</div>
+                        {iAmGuesser ? <button onClick={startTurn}>SIGUIENTE</button> : <p className="waiting-pulse">Tu pareja ve el resultado...</p>}</div>
                     )}
 
                     <div className="grid-wrapper">
@@ -219,12 +294,12 @@
         };
 
         // ==========================================
-        // APP PRINCIPAL (Lobby + Selector)
+        // APP PRINCIPAL
         // ==========================================
         function App() {
             const [playerName, setPlayerName] = React.useState(localStorage.getItem('name') || '');
             const [roomId, setRoomId] = React.useState('');
-            const [view, setView] = React.useState('lobby'); // lobby, waiting, game
+            const [view, setView] = React.useState('lobby'); 
             const [roomData, setRoomData] = React.useState(null);
             const [showChat, setShowChat] = React.useState(false);
             const [chatMsg, setChatMsg] = React.useState('');
@@ -237,7 +312,7 @@
                         const d = snap.val();
                         if (d) {
                             setRoomData(d);
-                            if (view === 'waiting' && d.players.guest) setView('game'); // Auto-entrar
+                            if (view === 'waiting' && d.players.guest) setView('game'); 
                             if (d.chat) setMsgs(Object.values(d.chat));
                         }
                     });
@@ -250,35 +325,37 @@
             
             const setGame = (g) => db.ref(`salas/${roomId}`).update({ gameState: g });
 
-            // RENDER
-            if (view === 'lobby') return (
-                <div className="card"><h1>Juegos Parejas ❤️</h1><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tu Nombre" /><button onClick={create}>Crear Sala</button><br/><br/><input id="c" placeholder="CÓDIGO" style={{textTransform:'uppercase'}} /><button style={{background:'#6366f1'}} onClick={()=>join(document.getElementById('c').value.toUpperCase())}>Unirse</button></div>
-            );
+            // VISTA CHAT SIEMPRE PRESENTE SI HAY SALA
+            const ChatGlobal = roomId ? (
+                <>
+                    <div className="chat-btn" onClick={()=>setShowChat(!showChat)}>💬</div>
+                    {showChat && <div className="chat-overlay"><div style={{flex:1,overflowY:'auto',padding:20,textAlign:'left',color:'white'}}>{msgs.map((m,i)=><div key={i}><b>{m.user}:</b> {m.text}</div>)}</div><div style={{display:'flex',padding:10,background:'#111'}}><input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0,flex:1}} placeholder="..." /><button onClick={sendC} style={{width:'auto',margin:0,marginLeft:10}}>➤</button></div><button onClick={()=>setShowChat(false)} style={{margin:0,borderRadius:0,background:'#333'}}>CERRAR</button></div>}
+                </>
+            ) : null;
+
+            if (view === 'lobby') return <div className="card"><h1>Parejas Ultimate ❤️</h1><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tu Nombre" /><button onClick={create}>Crear Sala</button><br/><br/><input id="c" placeholder="CÓDIGO" style={{textTransform:'uppercase'}} /><button style={{background:'#6366f1'}} onClick={()=>join(document.getElementById('c').value.toUpperCase())}>Unirse</button></div>;
 
             if (view === 'waiting') return <div className="card"><h2>{roomId}</h2><p className="waiting-pulse">Esperando a tu pareja...</p></div>;
 
-            // DENTRO DE LA SALA
             if (!roomData) return <div className="card">Cargando...</div>;
             const playerRole = roomData.players.host.name === playerName ? 'host' : 'guest';
             
-            // Si el estado es MENU, mostramos los botones
-            if (roomData.gameState === 'MENU') return (
+            return (
                 <div>
-                    {roomId && <><div className="chat-btn" onClick={()=>setShowChat(!showChat)}>💬</div>{showChat && <div className="chat-overlay"><div style={{flex:1,overflowY:'auto',padding:10,textAlign:'left'}}>{msgs.map((m,i)=><div key={i}><b>{m.user}:</b> {m.text}</div>)}</div><div style={{display:'flex',padding:10}}><input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0,flex:1}} /><button onClick={sendC} style={{width:'auto',margin:0}}>➤</button></div><button onClick={()=>setShowChat(false)} style={{margin:0,borderRadius:0}}>CERRAR</button></div>}</>}
+                    {ChatGlobal}
                     
-                    <div className="card">
-                        <h3>Elige a qué jugar</h3>
-                        <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES</button>
-                        <button className="game-btn btn-dial" onClick={()=>setGame('DIAL')}>🌊 EL DIAL</button>
-                    </div>
+                    {roomData.gameState === 'MENU' && (
+                        <div className="card">
+                            <h3>Elige a qué jugar</h3>
+                            <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES PRO</button>
+                            <button className="game-btn btn-dial" onClick={()=>setGame('DIAL')}>🌊 EL DIAL (180º)</button>
+                        </div>
+                    )}
+
+                    {roomData.gameState === 'COLOR' && <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
+                    {roomData.gameState === 'DIAL' && <DialGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                 </div>
             );
-
-            // Si hay un juego seleccionado
-            if (roomData.gameState === 'COLOR') return <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />;
-            if (roomData.gameState === 'DIAL') return <DialGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />;
-            
-            return <div>Error de estado</div>;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
