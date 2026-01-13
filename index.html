@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego Parejas Pro ❤️</title>
+    <title>Juego Parejas: 2 Rondas</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -12,61 +12,49 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ESTILOS GENERALES */
+        /* ESTILOS (TEMA OSCURO PRO) */
         * { box-sizing: border-box; touch-action: manipulation; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: #fce7f3; margin: 0; padding: 10px; text-align: center; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #fce7f3; margin: 0; padding: 10px; text-align: center; }
         
-        .card { background: #2d2d2d; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 600px; margin: 5px auto; border: 1px solid #444; }
+        .card { background: #1e1e1e; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 600px; margin: 10px auto; border: 1px solid #333; }
         
-        /* Botones estilo App */
-        button { width: 100%; padding: 14px; background: #db2777; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 15px; box-shadow: 0 4px 0 #9d174d; transition: 0.1s; }
-        button:active { transform: translateY(4px); box-shadow: none; }
-        button:disabled { background: #555; box-shadow: none; opacity: 0.6; color: #888; transform: none; }
+        button { width: 100%; padding: 14px; background: #be185d; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 15px; transition: 0.2s; }
+        button:disabled { background: #444; color: #888; opacity: 0.5; }
+        button:active { transform: scale(0.98); }
         
-        input { width: 100%; padding: 12px; background: #404040; border: 2px solid #555; border-radius: 10px; color: white; text-align: center; font-size: 16px; margin-bottom: 10px; outline: none; }
-        input:focus { border-color: #db2777; }
+        input { width: 100%; padding: 12px; background: #333; border: 2px solid #555; border-radius: 10px; color: white; text-align: center; font-size: 16px; outline: none; margin-bottom: 10px; }
+        input:focus { border-color: #be185d; }
         
-        /* GRID DE ALTA DEFINICIÓN */
-        .grid-container { overflow-x: auto; padding-bottom: 10px; }
+        /* GRID DE COLORES */
+        .grid-wrapper { overflow-x: auto; padding-bottom: 10px; display: flex; justify-content: center; }
         .color-grid { 
             display: grid; 
-            grid-template-columns: repeat(20, 1fr); /* 20 Columnas (Matiz) */
+            grid-template-columns: repeat(20, 1fr); /* 20 Columnas */
             gap: 1px; 
-            margin-top: 10px; 
             background: #000; 
             padding: 2px; 
-            border-radius: 8px; 
-            min-width: 320px; /* Asegura que no se aplaste en móviles muy pequeños */
+            border-radius: 6px; 
+            min-width: 340px;
         }
-        .color-cell { 
-            aspect-ratio: 1; 
-            border-radius: 1px; 
-            position: relative; 
-            cursor: pointer;
-        }
+        .color-cell { aspect-ratio: 1; border-radius: 1px; cursor: pointer; position: relative; }
         
-        /* MARCAS Y CURSORES */
-        /* Marca del Objetivo (Estrella) */
-        .target-mark::after { content: "★"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 10px; text-shadow: 0 0 2px black, 0 0 4px black; pointer-events: none; }
+        /* COORDENADAS */
+        .coord-box { background: #be185d; color: white; padding: 5px 15px; border-radius: 5px; font-weight: bold; display: inline-block; margin-bottom: 10px; font-size: 24px; letter-spacing: 2px; border: 2px solid #fbcfe8; }
         
-        /* Selección Temporal (Borde animado) */
-        .selected-temp { 
-            box-shadow: inset 0 0 0 2px white, 0 0 5px 2px rgba(255,255,255,0.8); 
-            z-index: 10; 
-            transform: scale(1.1); 
-            border-radius: 3px;
-            transition: transform 0.1s;
-        }
+        /* MARCAS */
+        .target-star::after { content: "★"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 10px; text-shadow: 0 0 3px black; pointer-events: none; }
+        
+        /* Marcas de selección */
+        .guess-mark-1 { border: 2px solid rgba(255,255,255,0.5); z-index: 5; } /* Intento 1 (fantasma) */
+        .guess-mark-current { box-shadow: 0 0 0 2px white, 0 0 10px #be185d; z-index: 10; transform: scale(1.15); border-radius: 2px; } /* Cursor actual */
 
-        /* TEXTOS Y AVISOS */
-        .phase-badge { display: inline-block; background: #500724; color: #fbcfe8; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; border: 1px solid #db2777; }
-        .big-text { font-size: 18px; font-weight: bold; margin: 10px 0; color: #fff; }
-        .waiting-pulse { animation: pulse 1.5s infinite; color: #aaa; font-style: italic; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-        /* CHAT FLOTANTE */
-        .chat-btn { position: fixed; top: 15px; right: 15px; background: #db2777; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 100; font-size: 20px; border: 2px solid white; cursor: pointer; }
-        .chat-box { position: fixed; top: 70px; right: 10px; left: 10px; height: 300px; background: #2d2d2d; border: 2px solid #db2777; border-radius: 15px; z-index: 99; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        /* NOTIFICACIONES */
+        .step-badge { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 5px; }
+        .hint-display { background: #333; padding: 10px; border-radius: 8px; font-style: italic; border-left: 4px solid #be185d; margin: 10px 0; text-align: left; }
+        
+        /* CHAT */
+        .chat-btn { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; border: 2px solid white; box-shadow: 0 4px 10px black; }
+        .chat-overlay { position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; background: #222; border-top: 2px solid #be185d; z-index: 99; display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
@@ -74,7 +62,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 1. CLAVES DE FIREBASE (YA PUESTAS) ---
+        // --- 1. CLAVES FIREBASE ---
         const firebaseConfig = {
           apiKey: "AIzaSyCbKOu5vwGbowuI5CfbygKJtYujAKa6zJ0",
           authDomain: "juegos-tiktok.firebaseapp.com",
@@ -88,226 +76,241 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 2. LÓGICA DE COLOR (Alta Variedad) ---
-        const COLS = 20; // Variedad de tonos (Hue)
-        const ROWS = 15; // Variedad de luz/saturación
-        
-        // Generador de color estilo "Mapa de Espectro"
+        // --- 2. CONFIGURACIÓN DEL JUEGO ---
+        const COLS = 20; // 1-20
+        const ROWS = 15; // A-O
+        const ROW_LABELS = "ABCDEFGHIJKLMNO".split('');
+
+        // Generador de colores Rico
         const getColor = (r, c) => {
-            const hue = Math.floor((360 / COLS) * c); // El matiz cambia por columnas
-            
-            // La fila define la luminosidad y saturación
-            // Filas superiores (0-3): Casi blanco a color pastel
-            // Filas medias (4-10): Color puro
-            // Filas inferiores (11-14): Color oscuro a casi negro
-            
-            let sat = 100;
-            let light = 50;
-
-            if (r < 5) {
-                // Zona Clara (Blanco -> Color)
-                light = 100 - (r * 10); 
-                sat = 50 + (r * 10);
-            } else if (r > 9) {
-                // Zona Oscura (Color -> Negro)
-                light = 50 - ((r - 9) * 10);
-            } else {
-                // Zona Media (Vibrante)
-                light = 50;
-            }
-
+            const hue = Math.floor((360 / COLS) * c);
+            let sat = 100, light = 50;
+            if (r < 5) { light = 100 - (r * 10); sat = 50 + (r * 10); } // Claros
+            else if (r > 9) { light = 50 - ((r - 9) * 8); } // Oscuros
             return `hsl(${hue}, ${sat}%, ${light}%)`;
         };
 
-        // --- 3. JUEGO ---
         const ColorGame = ({ roomId, playerRole, roomData }) => {
             const game = roomData.colorGame || {};
             
-            // Roles y Turnos
-            // ¿Quién pone el color? (Host en turno Host, Guest en turno Guest)
-            const isSetter = game.turn === playerRole; 
-            const isGuesser = game.turn && game.turn !== playerRole;
+            // Lógica de roles
+            const isHostTurn = game.turn === 'host'; // ¿De quién es el turno de dar pistas?
+            const amIHost = playerRole === 'host';
+            const iAmGiver = (isHostTurn && amIHost) || (!isHostTurn && !amIHost); // Yo doy la pista
+            const iAmGuesser = !iAmGiver; // Yo adivino
+
+            const actorName = isHostTurn ? roomData.players.host.name : roomData.players.guest.name; // Quien da pistas
             
-            // Nombre visual
-            const currentTurnName = game.turn === 'host' ? roomData.players.host.name : roomData.players.guest.name;
+            // --- FUNCIONES DEL JUEGO ---
 
-            // --- FUNCIONES ---
+            const startTurn = () => {
+                // Alternar turno
+                const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
+                
+                // Generar Objetivo Aleatorio
+                const r = Math.floor(Math.random() * ROWS);
+                const c = Math.floor(Math.random() * COLS);
+                const code = `${ROW_LABELS[r]}-${c + 1}`;
 
-            // 1. Empezar nueva ronda (Reset)
-            const startNewRound = () => {
-                const nextPlayer = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 db.ref(`salas/${roomId}/colorGame`).set({
-                    turn: nextPlayer,
-                    phase: 'SETUP', // SETUP (Elegir color) -> HINTING (Pista) -> GUESSING (Adivinar) -> RESULT
-                    tempTarget: null, // Donde está tocando el que elige
-                    target: null,     // El color elegido final
-                    tempGuess: null,  // Donde está tocando el que adivina
-                    guess: null,      // El color adivinado final
-                    hint: '',
+                    turn: nextTurn,
+                    target: { r, c, code },
+                    step: 1, // 1=Pista1, 2=Guess1, 3=Pista2, 4=Guess2, 5=Result
+                    hints: { h1: '', h2: '' },
+                    guesses: { g1: null, g2: null }, // Se guardan coordenadas
+                    currentCursor: null, // Cursor en tiempo real
                     score: 0
                 });
             };
 
-            // 2. Click en el tablero
-            const handleCellClick = (r, c) => {
-                // FASE 1: El Host elige el color objetivo
-                if (game.phase === 'SETUP' && isSetter) {
-                    db.ref(`salas/${roomId}/colorGame`).update({ tempTarget: {r, c} });
-                }
-                // FASE 3: El Guest intenta adivinar
-                if (game.phase === 'GUESSING' && isGuesser) {
-                    db.ref(`salas/${roomId}/colorGame`).update({ tempGuess: {r, c} });
-                }
-            };
-
-            // 3. Botones de confirmar
-            const confirmTarget = () => {
-                if (!game.tempTarget) return alert("Selecciona un color primero");
-                // Guardamos el objetivo fijo y pasamos a dar pista
-                db.ref(`salas/${roomId}/colorGame`).update({ 
-                    target: game.tempTarget,
-                    phase: 'HINTING' 
-                });
-            };
-
+            // Enviar Pista (Pasos 1 y 3)
             const sendHint = (text) => {
-                if (!text) return alert("Escribe algo...");
-                db.ref(`salas/${roomId}/colorGame`).update({ 
-                    hint: text, 
-                    phase: 'GUESSING' 
-                });
+                if(!text) return;
+                const update = {};
+                if (game.step === 1) update['hints/h1'] = text;
+                if (game.step === 3) update['hints/h2'] = text;
+                
+                // Avanzamos paso
+                update['step'] = game.step + 1; 
+                update['currentCursor'] = null; // Reset cursor visual
+                db.ref(`salas/${roomId}/colorGame`).update(update);
             };
 
+            // Mover cursor en tiempo real (Pasos 2 y 4)
+            const touchGrid = (r, c) => {
+                if (!iAmGuesser) return; // Solo el adivino toca
+                if (game.step !== 2 && game.step !== 4) return; // Solo en fases de adivinar
+                
+                db.ref(`salas/${roomId}/colorGame`).update({ currentCursor: {r, c} });
+            };
+
+            // Confirmar la elección del otro (Solo el Giver lo hace)
             const confirmGuess = () => {
-                if (!game.tempGuess) return alert("Selecciona un color primero");
+                if (!game.currentCursor) return alert("Espera a que tu pareja marque un color.");
                 
-                // Calcular puntos
-                const tr = game.target.r; const tc = game.target.c;
-                const gr = game.tempGuess.r; const gc = game.tempGuess.c;
-                
-                // Distancia euclidiana aproximada
-                const dist = Math.sqrt(Math.pow(tr - gr, 2) + Math.pow(tc - gc, 2));
-                
-                let points = 0;
-                if (dist < 1.5) points = 3;      // Exacto o pegado
-                else if (dist < 3.5) points = 2; // Cerca
-                else if (dist < 6) points = 1;   // Algo lejos
-                
-                db.ref(`salas/${roomId}/colorGame`).update({ 
-                    guess: game.tempGuess,
-                    score: points,
-                    phase: 'RESULT'
-                });
+                const update = {};
+                if (game.step === 2) {
+                    update['guesses/g1'] = game.currentCursor;
+                    update['step'] = 3; // Vamos a Pista 2
+                } else if (game.step === 4) {
+                    update['guesses/g2'] = game.currentCursor;
+                    update['step'] = 5; // Vamos a Resultados
+                    
+                    // CALCULAR PUNTOS (Basado en el Intento 2)
+                    const tr = game.target.r; const tc = game.target.c;
+                    const gr = game.currentCursor.r; const gc = game.currentCursor.c;
+                    // Distancia simple (cuadrados de distancia)
+                    const dist = Math.max(Math.abs(tr - gr), Math.abs(tc - gc));
+                    
+                    let pts = 0;
+                    if (dist === 0) pts = 3;
+                    else if (dist <= 1) pts = 2;
+                    else if (dist <= 3) pts = 1;
+                    update['score'] = pts;
+                }
+                update['currentCursor'] = null;
+                db.ref(`salas/${roomId}/colorGame`).update(update);
             };
 
-            // --- VISTA INICIAL ---
+            // --- RENDERIZADO ---
+
+            // 0. Pantalla de Inicio / Espera
             if (!game.turn) {
                 return (
                     <div className="card">
-                        <h2>🎨 Paleta Pro</h2>
-                        <p>Turnos manuales. Elige color, da pista, adivina.</p>
-                        {playerRole === 'host' ? 
-                            <button onClick={startNewRound}>EMPEZAR JUEGO</button> : 
-                            <p className="waiting-pulse">Esperando al Host...</p>}
+                        <h2>🎨 Modo 2 Rondas</h2>
+                        <p>Objetivo aleatorio. 2 Oportunidades.</p>
+                        {amIHost ? 
+                            <button onClick={startTurn}>INICIAR PARTIDA</button> : 
+                            <p style={{color:'#888'}}>Esperando al Host...</p>}
                     </div>
                 );
             }
 
-            // --- RENDERIZADO DEL JUEGO ---
             return (
-                <div className="card" style={{maxWidth:'100%', padding:'10px'}}>
+                <div className="card" style={{maxWidth:'100%', padding:10}}>
                     
-                    <div className="phase-badge">{game.phase === 'SETUP' ? 'ELIGIENDO COLOR' : (game.phase === 'HINTING' ? 'ESCRIBIENDO PISTA' : (game.phase === 'GUESSING' ? 'ADIVINANDO' : 'RESULTADO'))}</div>
-                    <div style={{color:'#aaa', fontSize:'14px', marginBottom:'10px'}}>Turno de: <b style={{color:'white'}}>{currentTurnName}</b></div>
+                    {/* ENCABEZADO */}
+                    <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#888', marginBottom:10}}>
+                        <span>TURNO: {actorName}</span>
+                        <span>PASO: {game.step}/5</span>
+                    </div>
 
-                    {/* ZONA DE CONTROLES (Arriba del tablero) */}
+                    {/* ZONA DE PISTAS Y CONTROLES */}
                     
-                    {/* FASE 1: SETUP (Elegir Objetivo) */}
-                    {game.phase === 'SETUP' && isSetter && (
+                    {/* Si soy quien DA la pista */}
+                    {iAmGiver && (
                         <div>
-                            <div className="big-text">1. Toca la paleta para elegir color</div>
-                            <div style={{height:30, width:'100%', background: game.tempTarget ? getColor(game.tempTarget.r, game.tempTarget.c) : '#333', borderRadius:5, marginBottom:10, border:'1px solid #fff'}}></div>
-                            <button onClick={confirmTarget} disabled={!game.tempTarget}>CONFIRMAR OBJETIVO ➤</button>
+                            {game.step < 5 && (
+                                <div style={{background:'#333', padding:10, borderRadius:8, marginBottom:10}}>
+                                    <div style={{fontSize:12}}>TU OBJETIVO:</div>
+                                    <div className="coord-box">{game.target.code}</div>
+                                    <div style={{height:20, background:getColor(game.target.r, game.target.c), width:'100%', borderRadius:4}}></div>
+                                </div>
+                            )}
+
+                            {/* Paso 1: Escribir Pista 1 */}
+                            {game.step === 1 && (
+                                <div>
+                                    <p>1. Escribe la primera pista:</p>
+                                    <input id="h1" placeholder="Ej: Es verde..." />
+                                    <button onClick={()=>sendHint(document.getElementById('h1').value)}>ENVIAR PISTA 1</button>
+                                </div>
+                            )}
+
+                            {/* Paso 2: Ver Intento 1 */}
+                            {game.step === 2 && (
+                                <div>
+                                    <p>👀 Tu pareja está eligiendo...</p>
+                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#10b981' : '#444'}}>
+                                        {game.currentCursor ? 'CONFIRMAR ESTA ELECCIÓN' : 'ESPERANDO QUE TOQUE...'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Paso 3: Escribir Pista 2 */}
+                            {game.step === 3 && (
+                                <div>
+                                    <div className="hint-display" style={{opacity:0.6}}>Pista 1: {game.hints.h1}</div>
+                                    <p>2. ¡Dales otra oportunidad! Pista 2:</p>
+                                    <input id="h2" placeholder="Ej: Más oscuro..." />
+                                    <button onClick={()=>sendHint(document.getElementById('h2').value)}>ENVIAR PISTA 2</button>
+                                </div>
+                            )}
+
+                            {/* Paso 4: Ver Intento 2 */}
+                            {game.step === 4 && (
+                                <div>
+                                    <p>👀 Segundo intento...</p>
+                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#10b981' : '#444'}}>
+                                        {game.currentCursor ? 'CONFIRMAR FINAL' : 'ESPERANDO QUE TOQUE...'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
-                    {game.phase === 'SETUP' && !isSetter && <p className="waiting-pulse">Tu pareja está eligiendo un color secreto...</p>}
 
-
-                    {/* FASE 2: PISTA */}
-                    {game.phase === 'HINTING' && isSetter && (
+                    {/* Si soy quien ADIVINA */}
+                    {iAmGuesser && (
                         <div>
-                            <div className="big-text">2. Da una pista para este color</div>
-                            <div style={{height:30, width:'100%', background: getColor(game.target.r, game.target.c), borderRadius:5, marginBottom:10}}></div>
-                            <input id="hintInput" placeholder="Ej: Ojos de tu gato..." />
-                            <button onClick={()=>sendHint(document.getElementById('hintInput').value)}>MANDAR PISTA</button>
+                            {/* Esperando Pistas */}
+                            {(game.step === 1 || game.step === 3) && (
+                                <div style={{padding:20, color:'#888', fontStyle:'italic'}}>
+                                    Esperando pista de tu pareja...
+                                </div>
+                            )}
+
+                            {/* Adivinando */}
+                            {(game.step === 2 || game.step === 4) && (
+                                <div>
+                                    <div className="hint-display">
+                                        Pista Actual: <b>{game.step === 2 ? game.hints.h1 : game.hints.h2}</b>
+                                    </div>
+                                    <p style={{color:'#10b981'}}>¡TOCA EL COLOR EN EL MAPA!</p>
+                                    {game.currentCursor && <div style={{fontSize:12, color:'#aaa'}}>Has marcado, espera a que confirmen.</div>}
+                                </div>
+                            )}
                         </div>
                     )}
-                    {game.phase === 'HINTING' && !isSetter && <p className="waiting-pulse">Esperando la pista...</p>}
 
-
-                    {/* FASE 3: ADIVINAR */}
-                    {game.phase === 'GUESSING' && (
-                        <div style={{background:'#500724', padding:10, borderRadius:10, marginBottom:10, border:'1px solid #db2777'}}>
-                            <span style={{color:'#fbcfe8', fontSize:12}}>PISTA:</span><br/>
-                            <span style={{fontSize:20, fontWeight:'bold', color:'white'}}>"{game.hint}"</span>
-                        </div>
-                    )}
-                    {game.phase === 'GUESSING' && isGuesser && (
-                        <div>
-                             <p>Toca la paleta para buscar el color.</p>
-                             <button onClick={confirmGuess} disabled={!game.tempGuess}>CONFIRMAR RESPUESTA ➤</button>
-                        </div>
-                    )}
-                    {game.phase === 'GUESSING' && isSetter && <p className="waiting-pulse">Mira cómo mueve el cursor tu pareja...</p>}
-
-
-                    {/* FASE 4: RESULTADO */}
-                    {game.phase === 'RESULT' && (
-                        <div>
-                            <div style={{fontSize:40, fontWeight:900, color: game.score > 0 ? '#4ade80' : '#f87171', textShadow:'0 2px 10px rgba(0,0,0,0.5)'}}>
-                                {game.score === 3 ? '¡PERFECTO!' : (game.score === 2 ? '¡MUY BIEN!' : (game.score === 1 ? 'CERCA...' : 'LEJOS'))}
+                    {/* RESULTADOS (Para los dos) */}
+                    {game.step === 5 && (
+                        <div style={{margin:'20px 0'}}>
+                            <div style={{fontSize:50, fontWeight:900, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div>
+                            <div style={{display:'flex', justifyContent:'center', gap:10, marginTop:10}}>
+                                <div>REAL<br/><div className="coord-box" style={{fontSize:14}}>{game.target.code}</div></div>
+                                <div style={{width:40, height:40, background:getColor(game.target.r, game.target.c), border:'2px solid white', borderRadius:5}}></div>
                             </div>
-                            <div style={{display:'flex', justifyContent:'center', gap:10, margin:'10px 0'}}>
-                                <div>OBJETIVO<br/><div style={{width:40, height:40, background:getColor(game.target.r, game.target.c), borderRadius:5, border:'1px solid white'}}></div></div>
-                                <div>INTENTO<br/><div style={{width:40, height:40, background:getColor(game.guess.r, game.guess.c), borderRadius:5, border:'1px solid white'}}></div></div>
-                            </div>
-                            <button onClick={startNewRound}>SIGUIENTE TURNO ↻</button>
+                            <button onClick={startTurn}>SIGUIENTE TURNO ➤</button>
                         </div>
                     )}
 
-
-                    {/* --- TABLERO (Siempre visible pero interactivo según fase) --- */}
-                    <div className="grid-container">
+                    {/* --- TABLERO --- */}
+                    <div className="grid-wrapper">
                         <div className="color-grid">
                             {Array.from({ length: COLS * ROWS }).map((_, i) => {
                                 const r = Math.floor(i / COLS);
                                 const c = i % COLS;
                                 const color = getColor(r, c);
 
-                                // LÓGICA DE VISUALIZACIÓN DE MARCAS
-                                let isTarget = false;
-                                let isTempTarget = false;
-                                let isTempGuess = false;
-                                let isFinalGuess = false;
+                                // Lógica visual
+                                const isTarget = (iAmGiver || game.step === 5) && game.target.r === r && game.target.c === c;
+                                const isCursor = game.currentCursor && game.currentCursor.r === r && game.currentCursor.c === c;
+                                const isGuess1 = game.guesses.g1 && game.guesses.g1.r === r && game.guesses.g1.c === c;
+                                const isGuess2 = game.guesses.g2 && game.guesses.g2.r === r && game.guesses.g2.c === c;
 
-                                // 1. Mostrar objetivo (Estrella)
-                                // El Host siempre ve su objetivo (temp o final)
-                                if (isSetter || game.phase === 'RESULT') {
-                                    if (game.target && game.target.r === r && game.target.c === c) isTarget = true;
-                                    if (game.phase === 'SETUP' && game.tempTarget && game.tempTarget.r === r && game.tempTarget.c === c) isTempTarget = true;
-                                }
-
-                                // 2. Mostrar intento (Borde)
-                                // Ambos ven el intento en tiempo real (tempGuess)
-                                if (game.phase === 'GUESSING' && game.tempGuess && game.tempGuess.r === r && game.tempGuess.c === c) isTempGuess = true;
-                                if (game.phase === 'RESULT' && game.guess && game.guess.r === r && game.guess.c === c) isFinalGuess = true;
+                                let classes = "color-cell";
+                                if (isTarget) classes += " target-star";
+                                if (isCursor) classes += " guess-mark-current";
+                                if (isGuess1) classes += " guess-mark-1"; // Muestra donde hizo click la primera vez
+                                if (isGuess2 && game.step === 5) classes += " guess-mark-current";
 
                                 return (
                                     <div 
                                         key={i} 
-                                        className={`color-cell ${isTarget ? 'target-mark' : ''} ${(isTempGuess || isFinalGuess || isTempTarget) ? 'selected-temp' : ''}`}
+                                        className={classes}
                                         style={{ backgroundColor: color }}
-                                        onClick={() => handleCellClick(r, c)}
+                                        onClick={() => touchGrid(r, c)}
                                     ></div>
                                 );
                             })}
@@ -318,7 +321,7 @@
             );
         };
 
-        // --- APP PRINCIPAL ---
+        // --- APP SHELL ---
         function App() {
             const [view, setView] = React.useState('lobby');
             const [playerName, setPlayerName] = React.useState(localStorage.getItem('name') || '');
@@ -326,7 +329,6 @@
             const [playerRole, setPlayerRole] = React.useState('');
             const [roomData, setRoomData] = React.useState(null);
             
-            // Chat
             const [showChat, setShowChat] = React.useState(false);
             const [chatMsg, setChatMsg] = React.useState('');
             const [messages, setMessages] = React.useState([]);
@@ -373,14 +375,15 @@
                         <>
                             <div className="chat-btn" onClick={() => setShowChat(!showChat)}>💬</div>
                             {showChat && (
-                                <div className="chat-box">
-                                    <div style={{flex:1, overflowY:'auto', padding:10, textAlign:'left', color:'white'}}>
-                                        {messages.map((m,i) => <div key={i} style={{marginBottom:5}}><b>{m.user}:</b> {m.text}</div>)}
+                                <div className="chat-overlay">
+                                    <div style={{flex:1, overflowY:'auto', padding:20, textAlign:'left'}}>
+                                        {messages.map((m,i) => <div key={i} style={{marginBottom:8}}><b>{m.user}:</b> {m.text}</div>)}
                                     </div>
-                                    <div style={{display:'flex', padding:10, background:'#444'}}>
+                                    <div style={{display:'flex', padding:10, background:'#333'}}>
                                         <input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0, flex:1}} placeholder="..."/>
                                         <button onClick={sendChat} style={{width:'auto', margin:'0 0 0 5px', padding:'0 15px'}}>➤</button>
                                     </div>
+                                    <button onClick={()=>setShowChat(false)} style={{margin:0, borderRadius:0, padding:10, background:'#111'}}>CERRAR</button>
                                 </div>
                             )}
                         </>
@@ -388,15 +391,15 @@
 
                     {view === 'lobby' && (
                         <div className="card">
-                            <h1>Parejas Pro ❤️</h1>
+                            <h1>Parejas ❤️</h1>
                             <input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tu Nombre" />
                             <button onClick={createRoom}>Crear Sala</button>
                             <input id="c" placeholder="CÓDIGO" style={{textTransform:'uppercase', marginTop:20}}/>
-                            <button style={{background:'#8b5cf6'}} onClick={()=>joinRoom(document.getElementById('c').value.toUpperCase())}>Unirse</button>
+                            <button style={{background:'#6366f1'}} onClick={()=>joinRoom(document.getElementById('c').value.toUpperCase())}>Unirse</button>
                         </div>
                     )}
 
-                    {view === 'waiting' && <div className="card"><h2>{roomId}</h2><p className="waiting-pulse">Esperando...</p></div>}
+                    {view === 'waiting' && <div className="card"><h2>{roomId}</h2><p>Esperando...</p></div>}
 
                     {view === 'game' && roomData && <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} />}
                 </div>
