@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego Parejas: 2 Rondas</title>
+    <title>Juego Parejas: 2 Rondas (Fix)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -81,7 +81,7 @@
         const ROWS = 15; // A-O
         const ROW_LABELS = "ABCDEFGHIJKLMNO".split('');
 
-        // Generador de colores Rico
+        // Generador de colores
         const getColor = (r, c) => {
             const hue = Math.floor((360 / COLS) * c);
             let sat = 100, light = 50;
@@ -94,17 +94,16 @@
             const game = roomData.colorGame || {};
             
             // Lógica de roles
-            const isHostTurn = game.turn === 'host'; // ¿De quién es el turno de dar pistas?
+            const isHostTurn = game.turn === 'host'; 
             const amIHost = playerRole === 'host';
             const iAmGiver = (isHostTurn && amIHost) || (!isHostTurn && !amIHost); // Yo doy la pista
             const iAmGuesser = !iAmGiver; // Yo adivino
 
-            const actorName = isHostTurn ? roomData.players.host.name : roomData.players.guest.name; // Quien da pistas
+            const actorName = isHostTurn ? roomData.players.host.name : roomData.players.guest.name; 
             
             // --- FUNCIONES DEL JUEGO ---
 
             const startTurn = () => {
-                // Alternar turno
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 
                 // Generar Objetivo Aleatorio
@@ -117,49 +116,44 @@
                     target: { r, c, code },
                     step: 1, // 1=Pista1, 2=Guess1, 3=Pista2, 4=Guess2, 5=Result
                     hints: { h1: '', h2: '' },
-                    guesses: { g1: null, g2: null }, // Se guardan coordenadas
-                    currentCursor: null, // Cursor en tiempo real
+                    guesses: { g1: null, g2: null }, 
+                    currentCursor: null, 
                     score: 0
                 });
             };
 
-            // Enviar Pista (Pasos 1 y 3)
             const sendHint = (text) => {
                 if(!text) return;
                 const update = {};
                 if (game.step === 1) update['hints/h1'] = text;
                 if (game.step === 3) update['hints/h2'] = text;
                 
-                // Avanzamos paso
-                update['step'] = game.step + 1; 
-                update['currentCursor'] = null; // Reset cursor visual
+                update['step'] = (game.step || 1) + 1; 
+                update['currentCursor'] = null; 
                 db.ref(`salas/${roomId}/colorGame`).update(update);
             };
 
-            // Mover cursor en tiempo real (Pasos 2 y 4)
             const touchGrid = (r, c) => {
-                if (!iAmGuesser) return; // Solo el adivino toca
-                if (game.step !== 2 && game.step !== 4) return; // Solo en fases de adivinar
+                if (!iAmGuesser) return; 
+                if (game.step !== 2 && game.step !== 4) return; 
                 
                 db.ref(`salas/${roomId}/colorGame`).update({ currentCursor: {r, c} });
             };
 
-            // Confirmar la elección del otro (Solo el Giver lo hace)
             const confirmGuess = () => {
                 if (!game.currentCursor) return alert("Espera a que tu pareja marque un color.");
                 
                 const update = {};
                 if (game.step === 2) {
                     update['guesses/g1'] = game.currentCursor;
-                    update['step'] = 3; // Vamos a Pista 2
+                    update['step'] = 3; 
                 } else if (game.step === 4) {
                     update['guesses/g2'] = game.currentCursor;
-                    update['step'] = 5; // Vamos a Resultados
+                    update['step'] = 5; 
                     
-                    // CALCULAR PUNTOS (Basado en el Intento 2)
+                    // CALCULAR PUNTOS
                     const tr = game.target.r; const tc = game.target.c;
                     const gr = game.currentCursor.r; const gc = game.currentCursor.c;
-                    // Distancia simple (cuadrados de distancia)
                     const dist = Math.max(Math.abs(tr - gr), Math.abs(tc - gc));
                     
                     let pts = 0;
@@ -174,7 +168,7 @@
 
             // --- RENDERIZADO ---
 
-            // 0. Pantalla de Inicio / Espera
+            // 0. Pantalla de Inicio / Espera (Lobby)
             if (!game.turn) {
                 return (
                     <div className="card">
@@ -186,6 +180,10 @@
                     </div>
                 );
             }
+
+            // !!! PROTECCIÓN CONTRA PANTALLA NEGRA !!!
+            // Si hay turno pero no hay target (datos corruptos o cargando), esperamos
+            if (!game.target) return <div className="card"><p>Cargando datos de la ronda...</p></div>;
 
             return (
                 <div className="card" style={{maxWidth:'100%', padding:10}}>
@@ -204,7 +202,7 @@
                             {game.step < 5 && (
                                 <div style={{background:'#333', padding:10, borderRadius:8, marginBottom:10}}>
                                     <div style={{fontSize:12}}>TU OBJETIVO:</div>
-                                    <div className="coord-box">{game.target.code}</div>
+                                    <div className="coord-box">{game.target?.code || '...'}</div>
                                     <div style={{height:20, background:getColor(game.target.r, game.target.c), width:'100%', borderRadius:4}}></div>
                                 </div>
                             )}
@@ -231,7 +229,7 @@
                             {/* Paso 3: Escribir Pista 2 */}
                             {game.step === 3 && (
                                 <div>
-                                    <div className="hint-display" style={{opacity:0.6}}>Pista 1: {game.hints.h1}</div>
+                                    <div className="hint-display" style={{opacity:0.6}}>Pista 1: {game.hints?.h1}</div>
                                     <p>2. ¡Dales otra oportunidad! Pista 2:</p>
                                     <input id="h2" placeholder="Ej: Más oscuro..." />
                                     <button onClick={()=>sendHint(document.getElementById('h2').value)}>ENVIAR PISTA 2</button>
@@ -264,7 +262,7 @@
                             {(game.step === 2 || game.step === 4) && (
                                 <div>
                                     <div className="hint-display">
-                                        Pista Actual: <b>{game.step === 2 ? game.hints.h1 : game.hints.h2}</b>
+                                        Pista Actual: <b>{game.step === 2 ? game.hints?.h1 : game.hints?.h2}</b>
                                     </div>
                                     <p style={{color:'#10b981'}}>¡TOCA EL COLOR EN EL MAPA!</p>
                                     {game.currentCursor && <div style={{fontSize:12, color:'#aaa'}}>Has marcado, espera a que confirmen.</div>}
@@ -278,7 +276,7 @@
                         <div style={{margin:'20px 0'}}>
                             <div style={{fontSize:50, fontWeight:900, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div>
                             <div style={{display:'flex', justifyContent:'center', gap:10, marginTop:10}}>
-                                <div>REAL<br/><div className="coord-box" style={{fontSize:14}}>{game.target.code}</div></div>
+                                <div>REAL<br/><div className="coord-box" style={{fontSize:14}}>{game.target?.code}</div></div>
                                 <div style={{width:40, height:40, background:getColor(game.target.r, game.target.c), border:'2px solid white', borderRadius:5}}></div>
                             </div>
                             <button onClick={startTurn}>SIGUIENTE TURNO ➤</button>
@@ -293,16 +291,16 @@
                                 const c = i % COLS;
                                 const color = getColor(r, c);
 
-                                // Lógica visual
-                                const isTarget = (iAmGiver || game.step === 5) && game.target.r === r && game.target.c === c;
+                                // Lógica visual protegida
+                                const isTarget = (iAmGiver || game.step === 5) && game.target?.r === r && game.target?.c === c;
                                 const isCursor = game.currentCursor && game.currentCursor.r === r && game.currentCursor.c === c;
-                                const isGuess1 = game.guesses.g1 && game.guesses.g1.r === r && game.guesses.g1.c === c;
-                                const isGuess2 = game.guesses.g2 && game.guesses.g2.r === r && game.guesses.g2.c === c;
+                                const isGuess1 = game.guesses?.g1 && game.guesses.g1.r === r && game.guesses.g1.c === c;
+                                const isGuess2 = game.guesses?.g2 && game.guesses.g2.r === r && game.guesses.g2.c === c;
 
                                 let classes = "color-cell";
                                 if (isTarget) classes += " target-star";
                                 if (isCursor) classes += " guess-mark-current";
-                                if (isGuess1) classes += " guess-mark-1"; // Muestra donde hizo click la primera vez
+                                if (isGuess1) classes += " guess-mark-1"; 
                                 if (isGuess2 && game.step === 5) classes += " guess-mark-current";
 
                                 return (
