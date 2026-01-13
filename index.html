@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate ❤️</title>
+    <title>Juegos Parejas Ultimate (Fix)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -30,12 +30,9 @@
         .btn-colors { background: linear-gradient(45deg, #ef4444, #eab308, #3b82f6); }
         .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
 
-        /* ============================
-           ESTILOS DIAL (ARREGLADO)
-           ============================ */
+        /* ESTILOS DIAL (ARREGLADO) */
         .dial-wrapper { position: relative; width: 320px; height: 170px; margin: 20px auto; overflow: hidden; display: flex; justify-content: center; align-items: flex-end; }
         
-        /* El Semicírculo Gris de Fondo */
         .dial-bg { 
             width: 300px; height: 150px; 
             background: #374151; 
@@ -46,44 +43,45 @@
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        /* La Zona de Puntos (Con Franjas Separadas) */
         .target-wedge {
             position: absolute; bottom: 0; left: 50%; width: 300px; height: 300px; margin-left: -150px; border-radius: 50%;
-            /* El gradiente cónico crea las franjas */
             background: conic-gradient(
                 from 0deg,
                 transparent 0deg,
                 transparent calc(var(--deg) - 22deg),
-                #facc15 calc(var(--deg) - 22deg), /* 2 pts start (Amarillo) */
+                #facc15 calc(var(--deg) - 22deg), 
                 #facc15 calc(var(--deg) - 14deg),
-                #f97316 calc(var(--deg) - 14deg), /* 3 pts start (Naranja) */
+                #f97316 calc(var(--deg) - 14deg), 
                 #f97316 calc(var(--deg) - 6deg),
-                #be185d calc(var(--deg) - 6deg),  /* 4 pts start (Rosa Centro) */
+                #be185d calc(var(--deg) - 6deg),  
                 #be185d calc(var(--deg) + 6deg),
-                #f97316 calc(var(--deg) + 6deg),  /* 3 pts end */
+                #f97316 calc(var(--deg) + 6deg),  
                 #f97316 calc(var(--deg) + 14deg),
-                #facc15 calc(var(--deg) + 14deg), /* 2 pts end */
+                #facc15 calc(var(--deg) + 14deg), 
                 #facc15 calc(var(--deg) + 22deg),
                 transparent calc(var(--deg) + 22deg)
             );
-            mask-image: linear-gradient(to top, black 50%, transparent 50%); /* Cortar para que sea semicírculo */
+            mask-image: linear-gradient(to top, black 50%, transparent 50%);
             -webkit-mask-image: linear-gradient(to top, black 50%, transparent 50%);
             opacity: 0; transition: opacity 0.5s; pointer-events: none;
         }
         .visible { opacity: 1; }
 
-        /* Aguja */
         .needle-pivot { position: absolute; bottom: 0; left: 50%; width: 0; height: 0; z-index: 10; }
         .needle { 
             width: 4px; height: 140px; background: #ef4444; 
             position: absolute; bottom: 0; left: -2px; 
             transform-origin: bottom center; 
             border-radius: 2px; box-shadow: 0 0 5px rgba(255,0,0,0.8);
-            transition: transform 0.1s cubic-bezier(0,0,0.2,1); /* Movimiento suave */
+            transition: transform 0.1s cubic-bezier(0,0,0.2,1); 
         }
         .knob { width: 20px; height: 20px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); z-index: 20; border: 2px solid #ef4444; }
 
         .topic-card { background: #312e81; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
+        
+        /* SCORE GRANDE */
+        .score-big { font-size: 60px; font-weight: 900; margin: 10px 0; text-shadow: 0 4px 10px black; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
         /* ESTILOS COLORES */
         .grid-wrapper { overflow-x: auto; padding-bottom: 10px; display: flex; justify-content: center; }
@@ -94,7 +92,7 @@
         .guess-mark-current { box-shadow: 0 0 0 2px white, 0 0 8px #be185d; z-index: 10; transform: scale(1.2); }
         .hint-display { background: #333; padding: 8px; border-radius: 6px; font-style: italic; border-left: 3px solid #be185d; text-align: left; margin: 5px 0; font-size: 14px; }
         
-        /* CHAT FLOTANTE GLOBAL */
+        /* CHAT FLOTANTE */
         .chat-btn { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 9999; border: 2px solid white; box-shadow: 0 4px 10px black; cursor: pointer; font-size: 20px; }
         .chat-overlay { position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; background: #222; border-top: 2px solid #be185d; z-index: 9998; display: flex; flex-direction: column; box-shadow: 0 -10px 50px rgba(0,0,0,0.5); }
         .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
@@ -120,9 +118,7 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ==========================================
-        // 0. LISTA DE CATEGORÍAS (AÑADE AQUÍ MÁS)
-        // ==========================================
+        // 0. LISTA DE CATEGORÍAS
         const TOPICS = [
             ["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"],
             ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"],
@@ -131,8 +127,7 @@
             ["Talento", "Habilidad"], ["Ciencia ficción", "Fantasía"], ["Sobrevalorado", "Infravalorado"],
             ["Temporal", "Eterno"], ["Local", "Global"], ["Ruidoso", "Silencioso"], ["Picante", "Dulce"],
             ["Trabajo", "Hobby"], ["Peligroso", "Seguro"], ["Oscuro", "Luminoso"], ["Pesado", "Ligero"],
-            ["Retro", "Moderno"], ["Físico", "Mental"], ["Niño", "Adulto"], ["Limpio", "Sucio"],
-            ["Rápido", "Lento"], ["Necesario", "Opcional"], ["Triste", "Feliz"], ["Barato", "Lujoso"]
+            ["Retro", "Moderno"], ["Físico", "Mental"], ["Niño", "Adulto"], ["Limpio", "Sucio"]
         ];
 
         // ==========================================
@@ -147,14 +142,12 @@
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-                // Angulo entre 10 y 170 grados (semicírculo)
                 const target = Math.floor(Math.random() * 160) + 10; 
                 db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
 
             const sendHint = (txt) => txt && db.ref(`salas/${roomId}/dialGame`).update({ hint: txt, phase: 'GUESSING' });
             
-            // Slider de 0 a 180 grados
             const moveNeedle = (val) => iAmGuesser && game.phase === 'GUESSING' && db.ref(`salas/${roomId}/dialGame`).update({ needleAngle: parseInt(val) });
             
             const confirmGuess = () => {
@@ -165,7 +158,6 @@
 
             if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
 
-            // Rotación visual: 0 input = -90deg CSS (Izquierda), 90 input = 0deg CSS (Arriba), 180 input = 90deg CSS (Derecha)
             const cssRot = game.needleAngle - 90;
 
             return (
@@ -180,22 +172,30 @@
 
                     <div className="dial-wrapper">
                         <div className="dial-bg"></div>
-                        {/* El target zone rota basado en el ángulo objetivo, pero ajustamos para coordenadas CSS (-90 es el centro) */}
                         <div className={`target-wedge ${(iAmPsychic || game.phase === 'RESULT') ? 'visible' : ''}`} style={{ '--deg': `${game.targetAngle - 90}deg` }}></div>
-                        
                         <div className="needle-pivot">
                              <div className="needle" style={{ transform: `rotate(${cssRot}deg)` }}></div>
                         </div>
                         <div className="knob"></div>
                     </div>
 
+                    {/* VISTA PSÍQUICO (PISTAS) */}
                     {iAmPsychic && (
                         <div>
                             {game.phase === 'HINTING' && <><p style={{color:'#be185d', fontSize:14}}>Tú ves la zona. ¡Da una pista!</p><input id="h" placeholder="Tu pista..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR PISTA</button></>}
                             {game.phase === 'GUESSING' && <p className="waiting-pulse">Tu pareja está moviendo la aguja...</p>}
-                            {game.phase === 'RESULT' && <p>Esperando a que inicien...</p>}
+                            
+                            {/* AQUÍ ESTABA EL ERROR ANTES: AHORA SÍ MUESTRA PUNTOS */}
+                            {game.phase === 'RESULT' && (
+                                <div>
+                                    <div className="score-big" style={{color: game.score===4?'#be185d':(game.score>0?'#f97316':'#555')}}>+{game.score}</div>
+                                    <p className="waiting-pulse">Esperando a que tu pareja inicie...</p>
+                                </div>
+                            )}
                         </div>
                     )}
+
+                    {/* VISTA ADIVINO (GUESSER) */}
                     {iAmGuesser && (
                         <div>
                             {game.phase === 'HINTING' && <p className="waiting-pulse">Esperando pista...</p>}
@@ -204,7 +204,12 @@
                                 <input type="range" min="0" max="180" value={game.needleAngle} onChange={e=>moveNeedle(e.target.value)} style={{width:'100%', accentColor:'#ef4444', height:30}} />
                                 <button onClick={confirmGuess} style={{background:'#ef4444'}}>BLOQUEAR</button>
                             </>}
-                            {game.phase === 'RESULT' && <><div style={{fontSize:50, color:'#fbbf24', fontWeight:900}}>+{game.score}</div><button onClick={startTurn}>SIGUIENTE</button></>}
+                            {game.phase === 'RESULT' && (
+                                <div>
+                                    <div className="score-big" style={{color: game.score===4?'#be185d':(game.score>0?'#f97316':'#555')}}>+{game.score}</div>
+                                    <button onClick={startTurn}>SIGUIENTE</button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -212,7 +217,7 @@
         };
 
         // ==========================================
-        // COMPONENTE 2: JUEGO COLORES
+        // COMPONENTE 2: JUEGO COLORES (Sin cambios)
         // ==========================================
         const ColorGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.colorGame || {};
@@ -325,7 +330,6 @@
             
             const setGame = (g) => db.ref(`salas/${roomId}`).update({ gameState: g });
 
-            // VISTA CHAT SIEMPRE PRESENTE SI HAY SALA
             const ChatGlobal = roomId ? (
                 <>
                     <div className="chat-btn" onClick={()=>setShowChat(!showChat)}>💬</div>
