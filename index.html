@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego Parejas ❤️</title>
-    
+    <title>Juego Parejas (Debug)</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -12,43 +11,18 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fdf2f8; color: #831843; margin: 0; padding: 15px; text-align: center; height: 100vh; overflow: hidden; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(219, 39, 119, 0.15); max-width: 400px; margin: 20px auto; position: relative; }
-        h1 { margin-top: 0; color: #db2777; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #fbcfe8; border-radius: 12px; font-size: 18px; text-align: center; outline: none; transition: 0.3s; }
-        input:focus { border-color: #db2777; box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
-        button { width: 100%; padding: 15px; background: #db2777; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; touch-action: manipulation; }
-        button:active { transform: scale(0.96); }
-        .btn-secondary { background: #8b5cf6; }
-        .divider { display: flex; align-items: center; margin: 15px 0; color: #fda4af; font-weight: bold; }
-        .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid #fbcfe8; }
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
-        .code-box { font-size: 32px; letter-spacing: 5px; font-weight: 800; color: #db2777; margin: 15px 0; padding: 10px; background: #fdf2f8; border-radius: 10px; border: 2px dashed #fbcfe8; }
-        .status-badge { display: inline-block; padding: 8px 15px; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 15px; }
-        
-        /* Animaciones */
-        .pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-        /* Chat Flotante */
-        .chat-btn { position: fixed; top: 15px; right: 15px; width: 50px; height: 50px; background: white; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 100; border: 2px solid #fbcfe8; cursor: pointer; }
-        .chat-window { position: fixed; top: 75px; right: 15px; left: 15px; bottom: 20px; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 99; display: flex; flex-direction: column; border: 2px solid #db2777; max-width: 400px; margin: 0 auto; }
-        .chat-header { padding: 15px; background: #fdf2f8; border-bottom: 1px solid #fbcfe8; font-weight: bold; border-radius: 18px 18px 0 0; display: flex; justify-content: space-between; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #fff; }
-        .chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        .msg { padding: 8px 12px; margin-bottom: 8px; border-radius: 15px; max-width: 80%; font-size: 14px; }
-        .msg-me { background: #db2777; color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; }
-        .msg-other { background: #f3f4f6; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        body { font-family: sans-serif; background: #fdf2f8; color: #831843; padding: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 2px solid #fbcfe8; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #db2777; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        .error { color: red; font-weight: bold; margin-top: 10px; border: 1px solid red; padding: 5px; background: #fee2e2; border-radius: 5px; }
     </style>
 </head>
 <body>
-
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- TUS CLAVES DE FIREBASE ---
+        // TUS CLAVES
         const firebaseConfig = {
           apiKey: "AIzaSyCbKOu5vwGbowuI5CfbygKJtYujAKa6zJ0",
           authDomain: "juegos-tiktok.firebaseapp.com",
@@ -59,205 +33,114 @@
           appId: "1:504168913042:web:e9eba88e01f94bcc7a2e4b"
         };
 
-        // Inicializar Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        } catch(e) {
+            alert("Error iniciando Firebase: " + e.message);
         }
         const db = firebase.database();
 
-        // --- COMPONENTE PRINCIPAL ---
         function App() {
-            // Estados
-            const [view, setView] = React.useState('lobby'); // 'lobby', 'waiting', 'game'
-            const [playerName, setPlayerName] = React.useState(localStorage.getItem('player_name') || '');
+            const [view, setView] = React.useState('lobby'); 
+            const [playerName, setPlayerName] = React.useState(localStorage.getItem('name') || '');
             const [roomId, setRoomId] = React.useState('');
+            const [errorMsg, setErrorMsg] = React.useState('');
             const [roomData, setRoomData] = React.useState(null);
-            const [playerRole, setPlayerRole] = React.useState(null); // 'host' o 'guest'
-            
-            // Chat
-            const [showChat, setShowChat] = React.useState(false);
-            const [chatMsg, setChatMsg] = React.useState('');
-            const [messages, setMessages] = React.useState([]);
 
-            // Guardar nombre localmente
-            React.useEffect(() => {
-                if(playerName) localStorage.setItem('player_name', playerName);
-            }, [playerName]);
+            React.useEffect(() => { localStorage.setItem('name', playerName); }, [playerName]);
 
-            // Escuchar cambios en la sala (Conexión Tiempo Real)
+            // Escuchar Sala
             React.useEffect(() => {
                 if (roomId) {
                     const roomRef = db.ref('salas/' + roomId);
-                    
-                    // Escuchar datos de la sala
                     roomRef.on('value', (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
                             setRoomData(data);
-                            // Si soy host y entra un invitado, ir al juego
-                            if (view === 'waiting' && data.players.guest) {
-                                setView('game');
-                            }
-                            // Cargar mensajes de chat
-                            if (data.chat) {
-                                const msgs = Object.values(data.chat);
-                                setMessages(msgs);
-                            }
+                            if (view === 'waiting' && data.players.guest) setView('game');
                         }
+                    }, (error) => {
+                        alert("Error de conexión: " + error.message);
                     });
-
                     return () => roomRef.off();
                 }
             }, [roomId, view]);
 
-            // FUNCIONES
             const createRoom = () => {
-                if (!playerName) return alert("¡Dime cómo te llamas amor! 😠");
-                // Generar ID de 4 letras/números
+                setErrorMsg("");
+                if (!playerName) return setErrorMsg("¡Pon tu nombre!");
+                
                 const newId = Math.random().toString(36).substring(2, 6).toUpperCase();
                 
+                // Intentar guardar en Firebase con reporte de errores
                 db.ref('salas/' + newId).set({
-                    players: {
-                        host: { name: playerName, score: 0 }
-                    },
-                    gameState: 'LOBBY',
-                    createdAt: Date.now()
+                    players: { host: { name: playerName } },
+                    gameState: 'LOBBY'
+                })
+                .then(() => {
+                    setRoomId(newId);
+                    setView('waiting');
+                })
+                .catch((error) => {
+                    alert("ERROR AL CREAR: " + error.message + "\n\n¿Has puesto las reglas en 'true'?");
+                    setErrorMsg(error.message);
                 });
-
-                setRoomId(newId);
-                setPlayerRole('host');
-                setView('waiting');
             };
 
-            const joinRoom = (code) => {
-                if (!playerName) return alert("¡Dime cómo te llamas! 😠");
-                if (!code) return alert("Falta el código");
-                
-                const codeUpper = code.toUpperCase();
-                const roomRef = db.ref('salas/' + codeUpper);
+            const joinRoom = () => {
+                setErrorMsg("");
+                const codeInput = document.getElementById('code').value.toUpperCase().trim();
+                if (!playerName) return setErrorMsg("¡Pon tu nombre!");
+                if (!codeInput) return setErrorMsg("Falta el código");
 
-                roomRef.once('value', (snapshot) => {
+                db.ref('salas/' + codeInput).once('value')
+                .then((snapshot) => {
                     if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        if (data.players.guest) {
-                            alert("¡La sala ya está llena!");
-                        } else {
-                            // Unirse
-                            db.ref('salas/' + codeUpper + '/players/guest').set({
-                                name: playerName,
-                                score: 0
-                            });
-                            setRoomId(codeUpper);
-                            setPlayerRole('guest');
-                            setView('game');
-                        }
+                         db.ref('salas/' + codeInput + '/players/guest').set({ name: playerName })
+                         .then(() => {
+                             setRoomId(codeInput);
+                             setView('game');
+                         })
+                         .catch(e => alert("Error al unirse: " + e.message));
                     } else {
-                        alert("Esa sala no existe amor :(");
+                        alert("¡Esa sala no existe! Revisa el código.");
                     }
+                })
+                .catch((error) => {
+                    alert("Error buscando sala: " + error.message);
                 });
             };
 
-            const sendMessage = () => {
-                if (!chatMsg.trim()) return;
-                const newMsgRef = db.ref('salas/' + roomId + '/chat').push();
-                newMsgRef.set({
-                    user: playerName,
-                    text: chatMsg,
-                    timestamp: Date.now()
-                });
-                setChatMsg('');
-            };
-
-            // RENDERIZADO (VISTAS)
             return (
-                <div>
-                    {/* Botón Chat (Solo si estamos en sala) */}
-                    {roomId && (
+                <div className="card">
+                    <h1>Diagnóstico 🔧</h1>
+                    
+                    {errorMsg && <div className="error">{errorMsg}</div>}
+
+                    {view === 'lobby' && (
                         <>
-                            <div className="chat-btn" onClick={() => setShowChat(!showChat)}>
-                                {showChat ? '✖️' : '💬'}
-                            </div>
-                            {showChat && (
-                                <div className="chat-window">
-                                    <div className="chat-header">
-                                        <span>Chat de Pareja ❤️</span>
-                                        <span onClick={() => setShowChat(false)}>🔽</span>
-                                    </div>
-                                    <div className="chat-messages">
-                                        {messages.length === 0 && <p style={{color:'#ccc', textAlign:'center'}}>Habla por aquí...</p>}
-                                        {messages.map((m, i) => (
-                                            <div key={i} className={`msg ${m.user === playerName ? 'msg-me' : 'msg-other'}`}>
-                                                <strong>{m.user}: </strong> {m.text}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="chat-input-area">
-                                        <input 
-                                            value={chatMsg} 
-                                            onChange={e => setChatMsg(e.target.value)} 
-                                            placeholder="..." 
-                                            style={{margin:0}}
-                                        />
-                                        <button onClick={sendMessage} style={{width:'auto', margin:0, padding:'0 15px'}}>➤</button>
-                                    </div>
-                                </div>
-                            )}
+                            <input placeholder="Tu Nombre" value={playerName} onChange={e => setPlayerName(e.target.value)} />
+                            <button onClick={createRoom}>1. Crear Sala</button>
+                            <hr/>
+                            <input id="code" placeholder="CÓDIGO (Ej: A1B2)" />
+                            <button onClick={joinRoom} style={{background:'#8b5cf6'}}>2. Unirse</button>
                         </>
                     )}
 
-                    {/* VISTA 1: LOBBY (Inicio) */}
-                    {view === 'lobby' && (
-                        <div className="card">
-                            <h1>Nuestro Juego 💑</h1>
-                            <p style={{color:'#888'}}>Bienvenid@ a vuestra app privada</p>
-                            
-                            <label style={{display:'block', textAlign:'left', fontWeight:'bold', marginTop:20}}>Tu Nombre:</label>
-                            <input 
-                                value={playerName} 
-                                onChange={e => setPlayerName(e.target.value)} 
-                                placeholder="Ej: Bebé"
-                            />
-
-                            <div className="divider">CREAR</div>
-                            <button onClick={createRoom}>Crear Sala Nueva</button>
-
-                            <div className="divider">O UNIRSE</div>
-                            <input id="code-input" placeholder="CÓDIGO DE SALA" style={{textTransform:'uppercase', letterSpacing: 2}} />
-                            <button className="btn-secondary" onClick={() => joinRoom(document.getElementById('code-input').value)}>
-                                Entrar
-                            </button>
-                        </div>
-                    )}
-
-                    {/* VISTA 2: ESPERANDO */}
                     {view === 'waiting' && (
-                        <div className="card pulse">
-                            <h2>⏳ Esperando...</h2>
-                            <p>Dile que ponga este código en su móvil:</p>
-                            <div className="code-box">{roomId}</div>
-                            <p style={{fontSize: 12, color: '#888'}}>No cierres esta pantalla</p>
-                        </div>
+                        <>
+                            <h2>Código: {roomId}</h2>
+                            <p>Esperando a que entre el otro...</p>
+                            <p style={{fontSize:12}}>Si el otro entra y esto no cambia, recarga la página.</p>
+                        </>
                     )}
 
-                    {/* VISTA 3: DENTRO DE LA SALA (Aquí irá el juego) */}
-                    {view === 'game' && roomData && (
-                        <div className="card">
-                            <div className="status-badge">✅ CONECTADOS</div>
-                            <h3>Hola {playerName} 👋</h3>
-                            <p>Tu pareja es: <strong>{playerRole === 'host' ? roomData.players.guest?.name : roomData.players.host.name}</strong></p>
-                            
-                            <hr style={{borderColor: '#fce7f3', margin: '20px 0'}} />
-                            
-                            <p>¡Ya estáis sincronizados!</p>
-                            <div style={{background: '#fef3c7', padding: 15, borderRadius: 10, color: '#d97706'}}>
-                                🚧 <strong>Próximo paso:</strong><br/>
-                                Aquí cargará el juego de colores.
-                            </div>
-                            
-                            <button onClick={() => alert("¡Pronto disponible!")} style={{opacity: 0.7}}>
-                                🎨 Empezar Colores
-                            </button>
-                        </div>
+                    {view === 'game' && (
+                        <>
+                            <h2 style={{color:'green'}}>¡CONECTADOS! ✅</h2>
+                            <p>Host: {roomData?.players?.host?.name}</p>
+                            <p>Guest: {roomData?.players?.guest?.name}</p>
+                        </>
                     )}
                 </div>
             );
