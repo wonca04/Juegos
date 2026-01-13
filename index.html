@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate (Fix Color)</title>
+    <title>Juegos Parejas Ultimate (Fix Visual)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -30,43 +30,69 @@
         .btn-colors { background: linear-gradient(45deg, #ef4444, #eab308, #3b82f6); }
         .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
 
-        /* ESTILOS DIAL (ARREGLADO VISIBILIDAD) */
-        .dial-wrapper { position: relative; width: 320px; height: 160px; margin: 20px auto; overflow: hidden; display: flex; justify-content: center; align-items: flex-end; }
-        
-        .dial-bg { 
-            width: 300px; height: 150px; 
-            background: #374151; 
-            border-top-left-radius: 150px; 
-            border-top-right-radius: 150px; 
+        /* ============================
+           ESTILOS DIAL (MÁSCARA ARREGLADA)
+           ============================ */
+        /* Contenedor principal del gráfico */
+        .dial-main-container {
+            position: relative;
+            width: 300px;
+            height: 160px; /* Un poco más alto para el knob */
+            margin: 20px auto;
+        }
+
+        /* La máscara que recorta el fondo y los colores */
+        .dial-mask {
+            width: 300px;
+            height: 150px;
+            overflow: hidden; /* ESTO CORTA LO QUE SOBRESALE */
+            border-top-left-radius: 150px;
+            border-top-right-radius: 150px;
+            position: absolute;
+            top: 0; left: 0;
+            background: #374151; /* Fondo gris base */
             border-bottom: 2px solid #555;
-            position: absolute; bottom: 0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
             z-index: 1;
         }
 
+        /* La Zona de Puntos (El triángulo de colores) */
         .target-wedge {
-            position: absolute; bottom: 0; left: 50%; width: 300px; height: 300px; margin-left: -150px; border-radius: 50%;
-            z-index: 2; /* Encima del fondo gris */
+            position: absolute;
+            top: 0; left: 0;
+            width: 300px; height: 300px; /* Cuadrado completo */
+            border-radius: 50%;
+            /* El gradiente cónico */
             background: conic-gradient(
-                from 0deg,
+                from 180deg at 50% 50%, /* Centrado */
                 transparent 0deg,
-                transparent calc(var(--deg) - 22deg),
-                #facc15 calc(var(--deg) - 22deg), 
-                #facc15 calc(var(--deg) - 14deg),
-                #f97316 calc(var(--deg) - 14deg), 
-                #f97316 calc(var(--deg) - 6deg),
-                #be185d calc(var(--deg) - 6deg),  
-                #be185d calc(var(--deg) + 6deg),
-                #f97316 calc(var(--deg) + 6deg),  
-                #f97316 calc(var(--deg) + 14deg),
-                #facc15 calc(var(--deg) + 14deg), 
-                #facc15 calc(var(--deg) + 22deg),
-                transparent calc(var(--deg) + 22deg)
+                transparent calc(90deg + var(--deg) - 22deg),
+                #facc15 calc(90deg + var(--deg) - 22deg), 
+                #facc15 calc(90deg + var(--deg) - 14deg),
+                #f97316 calc(90deg + var(--deg) - 14deg), 
+                #f97316 calc(90deg + var(--deg) - 6deg),
+                #be185d calc(90deg + var(--deg) - 6deg),  
+                #be185d calc(90deg + var(--deg) + 6deg),
+                #f97316 calc(90deg + var(--deg) + 6deg),  
+                #f97316 calc(90deg + var(--deg) + 14deg),
+                #facc15 calc(90deg + var(--deg) + 14deg), 
+                #facc15 calc(90deg + var(--deg) + 22deg),
+                transparent calc(90deg + var(--deg) + 22deg)
             );
-            transition: opacity 0.3s ease-in-out;
-            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2; /* Encima del gris */
         }
+        .visible { opacity: 1; }
 
-        .needle-pivot { position: absolute; bottom: 0; left: 50%; width: 0; height: 0; z-index: 10; }
+        /* Aguja (Fuera de la máscara para no cortarse) */
+        .needle-container {
+            position: absolute;
+            bottom: 10px; /* Alineado con el borde recto de la máscara */
+            left: 50%;
+            width: 0; height: 0;
+            z-index: 10;
+        }
         .needle { 
             width: 4px; height: 140px; background: #ef4444; 
             position: absolute; bottom: 0; left: -2px; 
@@ -74,7 +100,15 @@
             border-radius: 2px; box-shadow: 0 0 5px rgba(255,0,0,0.8);
             transition: transform 0.1s cubic-bezier(0,0,0.2,1); 
         }
-        .knob { width: 20px; height: 20px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); z-index: 20; border: 2px solid #ef4444; }
+        /* Botón central */
+        .knob { 
+            width: 24px; height: 24px; 
+            background: #e5e7eb; border-radius: 50%; 
+            position: absolute; bottom: 0; left: 50%; 
+            transform: translate(-50%, 50%); /* Centrado vertical en la línea */
+            z-index: 20; border: 2px solid #ef4444; 
+            box-shadow: 0 2px 5px black;
+        }
 
         .topic-card { background: #312e81; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
         
@@ -140,12 +174,14 @@
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                // Angulo entre 10 y 170 grados (semicírculo)
                 const target = Math.floor(Math.random() * 160) + 10; 
                 db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
 
             const sendHint = (txt) => txt && db.ref(`salas/${roomId}/dialGame`).update({ hint: txt, phase: 'GUESSING' });
             
+            // Slider de 0 a 180 grados
             const moveNeedle = (val) => iAmGuesser && game.phase === 'GUESSING' && db.ref(`salas/${roomId}/dialGame`).update({ needleAngle: parseInt(val) });
             
             const confirmGuess = () => {
@@ -156,9 +192,9 @@
 
             if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
 
+            // Rotación visual: -90 a +90
             const cssRot = game.needleAngle - 90;
-
-            // Lógica de visibilidad directa (sin depender solo de clases CSS)
+            // Visibilidad forzada
             const showZone = iAmPsychic || game.phase === 'RESULT';
 
             return (
@@ -171,17 +207,24 @@
                         <span style={{color:'#fda4af', width:'45%', textAlign:'right'}}>{game.topic[1]} ➡️</span>
                     </div>
 
-                    <div className="dial-wrapper">
-                        <div className="dial-bg"></div>
-                        {/* AQUI ESTÁ EL FIX DE VISIBILIDAD: Opacidad inline forzada */}
-                        <div className="target-wedge" style={{ '--deg': `${game.targetAngle - 90}deg`, opacity: showZone ? 1 : 0 }}></div>
-                        
-                        <div className="needle-pivot">
+                    <div className="dial-main-container">
+                        {/* 1. LA MÁSCARA (Corta el fondo y los colores) */}
+                        <div className="dial-mask">
+                            {/* Zona de colores (el triángulo) */}
+                            {/* Usamos opacity directa 1 o 0 */}
+                            <div className="target-wedge" style={{ '--deg': `${game.targetAngle - 90}deg`, opacity: showZone ? 1 : 0 }}></div>
+                        </div>
+
+                        {/* 2. LA AGUJA (Fuera de la máscara para verse entera) */}
+                        <div className="needle-container">
                              <div className="needle" style={{ transform: `rotate(${cssRot}deg)` }}></div>
                         </div>
+                        
+                        {/* 3. EL BOTÓN */}
                         <div className="knob"></div>
                     </div>
 
+                    {/* INTERFAZ PSÍQUICO */}
                     {iAmPsychic && (
                         <div>
                             {game.phase === 'HINTING' && <><p style={{color:'#be185d', fontSize:14}}>Tú ves la zona. ¡Da una pista!</p><input id="h" placeholder="Tu pista..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR PISTA</button></>}
@@ -196,6 +239,7 @@
                         </div>
                     )}
 
+                    {/* INTERFAZ ADIVINO */}
                     {iAmGuesser && (
                         <div>
                             {game.phase === 'HINTING' && <p className="waiting-pulse">Esperando pista...</p>}
