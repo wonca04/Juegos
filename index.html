@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate (Versión Final)</title>
+    <title>Juegos Parejas Ultimate (Full)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -41,9 +41,11 @@
         /* JUEGO CONVERGENCIA (CAFÉ O TÉ) */
         .secret-box { background: #4c1d95; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #a78bfa; font-size: 14px; color: #ddd; }
         .vs-container { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 20px 0; }
-        .option-btn { background: #333; border: 2px solid #555; padding: 20px 5px; flex: 1; font-size: 18px; color: white; border-radius: 12px; height: 100px; display: flex; align-items: center; justify-content: center; word-break: break-word; }
-        .option-btn:active { transform: scale(0.95); border-color: #d946ef; }
+        .option-btn { background: #333; border: 2px solid #555; padding: 10px; flex: 1; font-size: 18px; color: white; border-radius: 12px; height: 100px; display: flex; align-items: center; justify-content: center; word-break: break-word; transition: 0.2s; }
+        .option-btn:active { transform: scale(0.95); border-color: #d946ef; background: #444; }
         .current-winner { font-size: 24px; font-weight: bold; color: #fbbf24; margin: 10px 0; padding: 10px; border: 2px solid #fbbf24; border-radius: 10px; display: inline-block; }
+        
+        .start-choice-btn { width: 48%; padding: 30px 10px; font-size: 20px; border-radius: 15px; display: inline-block; margin: 5px; }
 
         /* JUEGO CATEGORÍAS */
         .cat-display { font-size: 22px; font-weight: bold; color: #34d399; margin: 10px 0; padding: 15px; border: 2px dashed #34d399; border-radius: 15px; background: #064e3b; }
@@ -112,30 +114,29 @@
         ];
 
         // ==========================================
-        // JUEGO 4: CONVERGENCIA (LÓGICA NUEVA)
+        // JUEGO 4: CONVERGENCIA (LÓGICA FINAL)
         // ==========================================
         const MindGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.mindGame || {};
             
-            // Turnos:
-            // "host" = Host pone la palabra secreta.
-            // "guest" = Guest pone la palabra secreta.
-            // Una vez puesta, la fase pasa a "GUESSING" y se van turnando.
-            
-            const isMyTurnToSet = (!game.turn && playerRole==='host') || (game.turn===playerRole);
-            const isMyTurnToGuess = game.phase === 'GUESSING' && game.guesser === playerRole;
-            const isMyTurnToChoose = game.phase === 'CHOOSING' && game.setter === playerRole;
-
             const initGame = () => {
                 const starter = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
+                // PRIMER PASO: Fase de elección inicial (Café o Té)
                 db.ref(`salas/${roomId}/mindGame`).set({
                     turn: starter,
-                    phase: 'SETUP', // SETUP -> GUESSING -> CHOOSING
-                    setter: starter, // Quien pensó la palabra
+                    phase: 'START_SELECT', 
+                    setter: starter, 
                     guesser: starter === 'host' ? 'guest' : 'host',
                     secretWord: '',
-                    currentBase: 'Café', // Palabra inicial por defecto
+                    currentBase: '',
                     candidateWord: ''
+                });
+            };
+
+            const setStartBase = (base) => {
+                db.ref(`salas/${roomId}/mindGame`).update({ 
+                    currentBase: base,
+                    phase: 'SETUP'
                 });
             };
 
@@ -156,7 +157,6 @@
             };
 
             const chooseWinner = (choice) => {
-                // choice puede ser 'BASE' (mantiene la actual) o 'CANDIDATE' (la nueva)
                 const newBase = choice === 'BASE' ? game.currentBase : game.candidateWord;
                 db.ref(`salas/${roomId}/mindGame`).update({ 
                     currentBase: newBase, 
@@ -176,16 +176,32 @@
                     <button onClick={onBack} style={{float:'right', padding:5, background:'transparent', border:'1px solid #555'}}>SALIR</button>
                     <div style={{clear:'both', color:'#aaa', marginBottom:10}}>RONDA DE: {game.setter === 'host' ? roomData.players.host.name : roomData.players.guest.name}</div>
 
+                    {/* FASE 0: ELEGIR INICIO (CAFÉ O TÉ) */}
+                    {game.phase === 'START_SELECT' && (
+                        <div>
+                            {playerRole === game.setter ? (
+                                <div>
+                                    <p>¿Cómo empezamos la partida?</p>
+                                    <div style={{display:'flex', justifyContent:'center'}}>
+                                        <button className="start-choice-btn" style={{background:'#78350f'}} onClick={()=>setStartBase('CAFÉ')}>☕ CAFÉ</button>
+                                        <button className="start-choice-btn" style={{background:'#065f46'}} onClick={()=>setStartBase('TÉ')}>🍵 TÉ</button>
+                                    </div>
+                                </div>
+                            ) : <p className="waiting-pulse">Tu pareja está eligiendo si Café o Té...</p>}
+                        </div>
+                    )}
+
                     {/* FASE 1: PENSAR PALABRA SECRETA */}
                     {game.phase === 'SETUP' && (
                         <div>
                             {playerRole === game.setter ? (
                                 <div>
+                                    <p>Empezamos con: <b style={{color:'#fbbf24'}}>{game.currentBase}</b></p>
                                     <p>Piensa una palabra secreta:</p>
                                     <input id="secretIn" placeholder="Ej: Océano" autoComplete="off" />
                                     <button onClick={()=>setSecret(document.getElementById('secretIn').value)}>FIJAR SECRETO</button>
                                 </div>
-                            ) : <p className="waiting-pulse">Tu pareja está pensando una palabra...</p>}
+                            ) : <p className="waiting-pulse">Tu pareja piensa una palabra secreta (empezando desde {game.currentBase})...</p>}
                         </div>
                     )}
 
@@ -196,7 +212,7 @@
                                 <div className="secret-box">Tu secreto: <b>{game.secretWord}</b></div>
                             )}
                             
-                            <div className="current-winner">Palabra actual: {game.currentBase}</div>
+                            <div className="current-winner">BASE: {game.currentBase}</div>
 
                             {/* FASE 2: ADIVINAR (GUESSER) */}
                             {game.phase === 'GUESSING' && (
@@ -218,8 +234,8 @@
                                         <div>
                                             <p>¿Cuál está más cerca de <b>{game.secretWord}</b>?</p>
                                             <div className="vs-container">
-                                                <button className="option-btn" onClick={()=>chooseWinner('BASE')}>{game.currentBase}</button>
-                                                <button className="option-btn" onClick={()=>chooseWinner('CANDIDATE')}>{game.candidateWord}</button>
+                                                <button className="option-btn" onClick={()=>chooseWinner('BASE')} style={{borderColor:'#fbbf24'}}>{game.currentBase}</button>
+                                                <button className="option-btn" onClick={()=>chooseWinner('CANDIDATE')} style={{borderColor:'#d946ef'}}>{game.candidateWord}</button>
                                             </div>
                                             <div style={{borderTop:'1px solid #555', paddingTop:10}}>
                                                 <p style={{fontSize:12, color:'#aaa'}}>¿Ha acertado?</p>
@@ -242,7 +258,7 @@
                         <div>
                             <div style={{fontSize:40, margin:'20px 0'}}>🎉 ¡ACERTASTE!</div>
                             <p>La palabra era: <b>{game.secretWord}</b></p>
-                            <p>Última aproximación: <b>{game.currentBase}</b></p>
+                            <p>Llegasteis a: <b>{game.currentBase}</b></p>
                             <button onClick={initGame}>CAMBIAR ROLES</button>
                         </div>
                     )}
