@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate (Final)</title>
+    <title>Juegos Parejas Ultimate (Versión Final)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -30,12 +30,20 @@
         .btn-colors { background: linear-gradient(45deg, #ef4444, #eab308, #3b82f6); }
         .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
         .btn-cats { background: linear-gradient(45deg, #10b981, #34d399); color: #064e3b; }
+        .btn-mind { background: linear-gradient(45deg, #d946ef, #8b5cf6); }
 
-        /* ESTILOS COMUNES JUEGOS */
+        /* ESTILOS COMUNES */
         .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .score-big { font-size: 60px; font-weight: 900; margin: 10px 0; text-shadow: 0 4px 10px black; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* JUEGO CONVERGENCIA (CAFÉ O TÉ) */
+        .secret-box { background: #4c1d95; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #a78bfa; font-size: 14px; color: #ddd; }
+        .vs-container { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 20px 0; }
+        .option-btn { background: #333; border: 2px solid #555; padding: 20px 5px; flex: 1; font-size: 18px; color: white; border-radius: 12px; height: 100px; display: flex; align-items: center; justify-content: center; word-break: break-word; }
+        .option-btn:active { transform: scale(0.95); border-color: #d946ef; }
+        .current-winner { font-size: 24px; font-weight: bold; color: #fbbf24; margin: 10px 0; padding: 10px; border: 2px solid #fbbf24; border-radius: 10px; display: inline-block; }
 
         /* JUEGO CATEGORÍAS */
         .cat-display { font-size: 22px; font-weight: bold; color: #34d399; margin: 10px 0; padding: 15px; border: 2px dashed #34d399; border-radius: 15px; background: #064e3b; }
@@ -85,60 +93,178 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- LISTA GIGANTE DIAL ---
+        // DATOS
         const DIAL_TOPICS = [
-            ["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"],
-            ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"],
-            ["Basura", "Tesoro"], ["Blando", "Duro"], ["Sano", "Insalubre"], ["Legal", "Ilegal"],
-            ["Poco ético", "Ético"], ["Placer", "Dolor"], ["Cierto", "Falso"], ["Normal", "Raro"],
-            ["Talento", "Habilidad"], ["Ciencia ficción", "Fantasía"], ["Sobrevalorado", "Infravalorado"],
-            ["Temporal", "Eterno"], ["Local", "Global"], ["Ruidoso", "Silencioso"], ["Picante", "Dulce"],
-            ["Trabajo", "Hobby"], ["Peligroso", "Seguro"], ["Oscuro", "Luminoso"], ["Pesado", "Ligero"],
-            ["Retro", "Moderno"], ["Físico", "Mental"], ["Niño", "Adulto"], ["Limpio", "Sucio"],
-            ["Rápido", "Lento"], ["Necesario", "Opcional"], ["Triste", "Feliz"], ["Barato", "Lujoso"],
-            ["Gato", "Perro"], ["Cerveza", "Vino"], ["Playa", "Montaña"], ["Carne", "Pescado"],
-            ["Inteligente", "Bello"], ["Ducha", "Baño"], ["Pizza", "Hamburguesa"], ["Star Wars", "Harry Potter"],
-            ["Madrugar", "Trasnochar"], ["Verano", "Invierno"], ["Cine", "Netflix"], ["Libro", "Película"],
-            ["Formal", "Casual"], ["Ordenado", "Caótico"], ["Ahorrador", "Derrochador"], ["Tímido", "Extrovertido"],
-            ["Optimista", "Pesimista"], ["Realista", "Soñador"], ["Vainilla", "Chocolate"], ["Café", "Té"],
-            ["Amor", "Dinero"], ["Justicia", "Venganza"], ["Perdón", "Rencor"], ["Hablar", "Escuchar"]
+            ["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"], ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"],
+            ["Basura", "Tesoro"], ["Blando", "Duro"], ["Sano", "Insalubre"], ["Legal", "Ilegal"], ["Poco ético", "Ético"], ["Placer", "Dolor"], ["Cierto", "Falso"], ["Normal", "Raro"],
+            ["Talento", "Habilidad"], ["Ciencia", "Fantasía"], ["Temporal", "Eterno"], ["Local", "Global"], ["Ruidoso", "Silencioso"], ["Picante", "Dulce"], ["Trabajo", "Hobby"],
+            ["Peligroso", "Seguro"], ["Oscuro", "Luminoso"], ["Retro", "Moderno"], ["Niño", "Adulto"], ["Limpio", "Sucio"], ["Gato", "Perro"], ["Cerveza", "Vino"], ["Playa", "Montaña"],
+            ["Carne", "Pescado"], ["Inteligente", "Bello"], ["Ducha", "Baño"], ["Pizza", "Hamburguesa"], ["Madrugar", "Trasnochar"], ["Verano", "Invierno"], ["Cine", "Netflix"],
+            ["Formal", "Casual"], ["Ordenado", "Caótico"], ["Ahorrador", "Derrochador"], ["Tímido", "Extrovertido"], ["Optimista", "Pesimista"], ["Realista", "Soñador"], ["Vainilla", "Chocolate"],
+            ["Amor", "Dinero"], ["Justicia", "Venganza"], ["Perdón", "Rencor"], ["Hablar", "Escuchar"], ["Mentira", "Verdad"], ["Pasado", "Futuro"], ["Sol", "Luna"]
         ];
         
-        // --- LISTA CATEGORÍAS ---
         const CAT_LIST = [
-            "Marcas de Coche", "Frutas", "Cosas Rojas", "Países de Europa", "Marcas de Ropa", 
-            "Animales de Granja", "Cosas que hay en el baño", "Nombres de mujer", "Deportes", 
-            "Sabores de helado", "Cosas que se rompen", "Películas Disney", "Cosas redondas", 
-            "Comida basura", "Cosas que vuelan", "Instrumentos musicales", "Cosas frías", 
-            "Marcas de tecnología", "Partes del cuerpo", "Cosas que dan miedo", "Animales marinos", 
-            "Bebidas alcohólicas", "Cosas que huelen mal", "Verbos", "Cosas de madera", 
-            "Superhéroes", "Cosas que hay en un bolso", "Programas de TV", "Colores", 
-            "Cosas que se beben calientes", "Capitales", "Marcas de zapatillas", "Cosas pegajosas",
-            "Villanos de cine", "Cosas que explotan", "Emojis", "Apps del móvil", "Cosas verdes",
-            "Marcas de cereales", "Cosas que encuentras en la playa", "Videojuegos", "Youtubers"
+            "Marcas de Coche", "Frutas", "Cosas Rojas", "Países de Europa", "Marcas de Ropa", "Animales de Granja", "Cosas del baño", "Nombres de mujer", "Deportes", "Helados", 
+            "Cosas que se rompen", "Películas Disney", "Cosas redondas", "Comida basura", "Cosas que vuelan", "Instrumentos", "Cosas frías", "Marcas tecnología", "Partes del cuerpo", 
+            "Cosas de miedo", "Animales marinos", "Bebidas alcohólicas", "Malos olores", "Verbos", "Cosas de madera", "Superhéroes", "Cosas de bolso", "Programas TV", "Colores", 
+            "Bebidas calientes", "Capitales", "Zapatillas", "Cosas pegajosas", "Villanos", "Explosivos", "Emojis", "Apps", "Cosas verdes", "Cereales", "Cosas de playa", "Videojuegos", "Youtubers"
         ];
 
         // ==========================================
-        // JUEGO 3: CATEGORÍAS (AUTO SEND 5s)
+        // JUEGO 4: CONVERGENCIA (LÓGICA NUEVA)
+        // ==========================================
+        const MindGame = ({ roomId, playerRole, roomData, onBack }) => {
+            const game = roomData.mindGame || {};
+            
+            // Turnos:
+            // "host" = Host pone la palabra secreta.
+            // "guest" = Guest pone la palabra secreta.
+            // Una vez puesta, la fase pasa a "GUESSING" y se van turnando.
+            
+            const isMyTurnToSet = (!game.turn && playerRole==='host') || (game.turn===playerRole);
+            const isMyTurnToGuess = game.phase === 'GUESSING' && game.guesser === playerRole;
+            const isMyTurnToChoose = game.phase === 'CHOOSING' && game.setter === playerRole;
+
+            const initGame = () => {
+                const starter = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
+                db.ref(`salas/${roomId}/mindGame`).set({
+                    turn: starter,
+                    phase: 'SETUP', // SETUP -> GUESSING -> CHOOSING
+                    setter: starter, // Quien pensó la palabra
+                    guesser: starter === 'host' ? 'guest' : 'host',
+                    secretWord: '',
+                    currentBase: 'Café', // Palabra inicial por defecto
+                    candidateWord: ''
+                });
+            };
+
+            const setSecret = (word) => {
+                if(!word) return;
+                db.ref(`salas/${roomId}/mindGame`).update({ 
+                    secretWord: word.toUpperCase(), 
+                    phase: 'GUESSING' 
+                });
+            };
+
+            const sendGuess = (word) => {
+                if(!word) return;
+                db.ref(`salas/${roomId}/mindGame`).update({ 
+                    candidateWord: word.toUpperCase(), 
+                    phase: 'CHOOSING' 
+                });
+            };
+
+            const chooseWinner = (choice) => {
+                // choice puede ser 'BASE' (mantiene la actual) o 'CANDIDATE' (la nueva)
+                const newBase = choice === 'BASE' ? game.currentBase : game.candidateWord;
+                db.ref(`salas/${roomId}/mindGame`).update({ 
+                    currentBase: newBase, 
+                    candidateWord: '', 
+                    phase: 'GUESSING' 
+                });
+            };
+
+            const declareWin = () => {
+                db.ref(`salas/${roomId}/mindGame`).update({ phase: 'WIN' });
+            };
+
+            if (!game.phase) return <div className="card"><h2>☕ Café o Té</h2><p>Acércate a la palabra secreta.</p><button onClick={initGame} className="game-btn btn-mind">EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
+
+            return (
+                <div className="card">
+                    <button onClick={onBack} style={{float:'right', padding:5, background:'transparent', border:'1px solid #555'}}>SALIR</button>
+                    <div style={{clear:'both', color:'#aaa', marginBottom:10}}>RONDA DE: {game.setter === 'host' ? roomData.players.host.name : roomData.players.guest.name}</div>
+
+                    {/* FASE 1: PENSAR PALABRA SECRETA */}
+                    {game.phase === 'SETUP' && (
+                        <div>
+                            {playerRole === game.setter ? (
+                                <div>
+                                    <p>Piensa una palabra secreta:</p>
+                                    <input id="secretIn" placeholder="Ej: Océano" autoComplete="off" />
+                                    <button onClick={()=>setSecret(document.getElementById('secretIn').value)}>FIJAR SECRETO</button>
+                                </div>
+                            ) : <p className="waiting-pulse">Tu pareja está pensando una palabra...</p>}
+                        </div>
+                    )}
+
+                    {/* JUEGO EN MARCHA */}
+                    {(game.phase === 'GUESSING' || game.phase === 'CHOOSING') && (
+                        <div>
+                            {playerRole === game.setter && (
+                                <div className="secret-box">Tu secreto: <b>{game.secretWord}</b></div>
+                            )}
+                            
+                            <div className="current-winner">Palabra actual: {game.currentBase}</div>
+
+                            {/* FASE 2: ADIVINAR (GUESSER) */}
+                            {game.phase === 'GUESSING' && (
+                                <div>
+                                    {playerRole === game.guesser ? (
+                                        <div>
+                                            <p>Escribe algo que se acerque más:</p>
+                                            <input id="guessIn" placeholder="Tu intento..." autoComplete="off" />
+                                            <button onClick={()=>sendGuess(document.getElementById('guessIn').value)}>ENVIAR</button>
+                                        </div>
+                                    ) : <p className="waiting-pulse">Tu pareja está pensando una palabra...</p>}
+                                </div>
+                            )}
+
+                            {/* FASE 3: ELEGIR (SETTER) */}
+                            {game.phase === 'CHOOSING' && (
+                                <div>
+                                    {playerRole === game.setter ? (
+                                        <div>
+                                            <p>¿Cuál está más cerca de <b>{game.secretWord}</b>?</p>
+                                            <div className="vs-container">
+                                                <button className="option-btn" onClick={()=>chooseWinner('BASE')}>{game.currentBase}</button>
+                                                <button className="option-btn" onClick={()=>chooseWinner('CANDIDATE')}>{game.candidateWord}</button>
+                                            </div>
+                                            <div style={{borderTop:'1px solid #555', paddingTop:10}}>
+                                                <p style={{fontSize:12, color:'#aaa'}}>¿Ha acertado?</p>
+                                                <button onClick={declareWin} style={{background:'#10b981', marginTop:0}}>¡SÍ, ESA ES!</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p>Has dicho: <b>{game.candidateWord}</b></p>
+                                            <p className="waiting-pulse">Tu pareja está eligiendo...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* VICTORIA */}
+                    {game.phase === 'WIN' && (
+                        <div>
+                            <div style={{fontSize:40, margin:'20px 0'}}>🎉 ¡ACERTASTE!</div>
+                            <p>La palabra era: <b>{game.secretWord}</b></p>
+                            <p>Última aproximación: <b>{game.currentBase}</b></p>
+                            <button onClick={initGame}>CAMBIAR ROLES</button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ==========================================
+        // JUEGO 3: CATEGORÍAS (AUTO 5s)
         // ==========================================
         const CategoryGame = ({ roomId, playerRole, roomData, onBack }) => {
             const game = roomData.catGame || {};
-            const [localWord, setLocalWord] = React.useState('');
             const [timeLeft, setTimeLeft] = React.useState(5);
 
-            // Efecto de temporizador local visual y auto-envío
             React.useEffect(() => {
                 let timer = null;
                 if (game.phase === 'PLAY') {
-                    setTimeLeft(5); // Reset visual
-                    setLocalWord(''); // Limpiar input anterior
-                    
+                    setTimeLeft(5); 
                     timer = setInterval(() => {
                         setTimeLeft((prev) => {
                             if (prev <= 1) {
                                 clearInterval(timer);
-                                // AUTO ENVÍO SI EL TIEMPO SE ACABA
-                                // Usamos una referencia al input actual o el estado local
                                 submitWord(document.getElementById('wordIn')?.value || '');
                                 return 0;
                             }
@@ -151,33 +277,23 @@
 
             const startRound = () => {
                 const cat = CAT_LIST[Math.floor(Math.random() * CAT_LIST.length)];
-                db.ref(`salas/${roomId}/catGame`).set({
-                    category: cat,
-                    phase: 'PLAY', 
-                    p1Word: '', p2Word: '', 
-                    score: game.score || 0
-                });
+                db.ref(`salas/${roomId}/catGame`).set({ category: cat, phase: 'PLAY', p1Word: '', p2Word: '', score: game.score || 0 });
             };
 
             const submitWord = (word) => {
                 const field = playerRole === 'host' ? 'p1Word' : 'p2Word';
-                // Solo enviamos si no se ha enviado ya
                 db.ref(`salas/${roomId}/catGame`).update({ [field]: word || "..." }); 
             };
 
-            // Trigger reveal cuando ambos tienen palabra
             React.useEffect(() => {
-                if (game.phase === 'PLAY' && game.p1Word && game.p2Word) {
-                    if (playerRole === 'host') db.ref(`salas/${roomId}/catGame/phase`).set('REVEAL');
+                if (game.phase === 'PLAY' && game.p1Word && game.p2Word && playerRole === 'host') {
+                    db.ref(`salas/${roomId}/catGame/phase`).set('REVEAL');
                 }
             }, [game.p1Word, game.p2Word, game.phase]);
 
             const vote = (result) => { 
-                let newScore = game.score;
-                if (result === 'DIFF') newScore += 1;
-                else newScore = 0; 
-                db.ref(`salas/${roomId}/catGame/score`).set(newScore);
-                startRound(); 
+                let newScore = game.score; if (result === 'DIFF') newScore += 1; else newScore = 0; 
+                db.ref(`salas/${roomId}/catGame/score`).set(newScore); startRound(); 
             };
 
             if (!game.category) return <div className="card"><h2>🚫 No Digas lo Mismo</h2><p>5 Segundos para pensar y escribir.</p><button onClick={()=>startRound()} className="game-btn btn-cats">EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
@@ -186,39 +302,9 @@
                 <div className="card">
                     <button onClick={onBack} style={{float:'right', padding:5, background:'transparent', border:'1px solid #555'}}>SALIR</button>
                     <div style={{clear:'both'}}>RACHA: <span style={{color:'#34d399', fontSize:24, fontWeight:'bold'}}>{game.score}</span></div>
-
                     <div className="cat-display">{game.category}</div>
-
-                    {game.phase === 'PLAY' && (
-                        <div>
-                            <div className={`timer-circle ${timeLeft <= 2 ? 'timer-danger' : ''}`}>{timeLeft}</div>
-                            
-                            {/* Input siempre activo hasta que se envíe */}
-                            {(playerRole==='host' && game.p1Word) || (playerRole==='guest' && game.p2Word) ? 
-                                <p className="waiting-pulse">Enviado. Esperando rival...</p> 
-                                : 
-                                <div>
-                                    <input id="wordIn" placeholder="Escribe aquí..." autoFocus autoComplete="off" />
-                                    <button onClick={()=>submitWord(document.getElementById('wordIn').value)}>ENVIAR</button>
-                                </div>
-                            }
-                        </div>
-                    )}
-
-                    {game.phase === 'REVEAL' && (
-                        <div>
-                            <div className="word-reveal" style={{borderLeft:'5px solid #be185d'}}>{roomData.players.host.name}: <br/> <span style={{color:'white'}}>{game.p1Word}</span></div>
-                            <div className="word-reveal" style={{borderLeft:'5px solid #3b82f6'}}>{roomData.players.guest.name}: <br/> <span style={{color:'white'}}>{game.p2Word}</span></div>
-                            
-                            <p style={{marginTop:20}}>¿Son distintas?</p>
-                            {playerRole === 'host' ? (
-                                <div style={{display:'flex', gap:10}}>
-                                    <button onClick={()=>vote('DIFF')} style={{background:'#10b981'}}>✅ SÍ (+1)</button>
-                                    <button onClick={()=>vote('SAME')} style={{background:'#ef4444'}}>❌ NO (0)</button>
-                                </div>
-                            ) : <p className="waiting-pulse">El Host valida...</p>}
-                        </div>
-                    )}
+                    {game.phase === 'PLAY' && (<div><div className={`timer-circle ${timeLeft <= 2 ? 'timer-danger' : ''}`}>{timeLeft}</div>{(playerRole==='host' && game.p1Word) || (playerRole==='guest' && game.p2Word) ? <p className="waiting-pulse">Enviado. Esperando...</p> : <div><input id="wordIn" placeholder="Escribe aquí..." autoFocus autoComplete="off" /><button onClick={()=>submitWord(document.getElementById('wordIn').value)}>ENVIAR</button></div>}</div>)}
+                    {game.phase === 'REVEAL' && (<div><div className="word-reveal" style={{borderLeft:'5px solid #be185d'}}>{roomData.players.host.name}: <br/> <span style={{color:'white'}}>{game.p1Word}</span></div><div className="word-reveal" style={{borderLeft:'5px solid #3b82f6'}}>{roomData.players.guest.name}: <br/> <span style={{color:'white'}}>{game.p2Word}</span></div><p style={{marginTop:20}}>¿Son distintas?</p>{playerRole === 'host' ? (<div style={{display:'flex', gap:10}}><button onClick={()=>vote('DIFF')} style={{background:'#10b981'}}>✅ SÍ (+1)</button><button onClick={()=>vote('SAME')} style={{background:'#ef4444'}}>❌ NO (0)</button></div>) : <p className="waiting-pulse">El Host valida...</p>}</div>)}
                 </div>
             );
         };
@@ -330,13 +416,15 @@
                         <div className="card">
                             <h3>Elige Juego</h3>
                             <button className="game-btn btn-cats" onClick={()=>setGame('CAT')}>🚫 NO DIGAS LO MISMO</button>
-                            <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES</button>
                             <button className="game-btn btn-dial" onClick={()=>setGame('DIAL')}>🌊 EL DIAL</button>
+                            <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES</button>
+                            <button className="game-btn btn-mind" onClick={()=>setGame('MIND')}>☕ CAFÉ O TÉ</button>
                         </div>
                     )}
                     {roomData.gameState === 'CAT' && <CategoryGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                     {roomData.gameState === 'COLOR' && <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                     {roomData.gameState === 'DIAL' && <DialGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
+                    {roomData.gameState === 'MIND' && <MindGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />}
                 </div>
             );
         }
