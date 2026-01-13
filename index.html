@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego Parejas: Control Guesser</title>
+    <title>Juegos Parejas Pack ❤️</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -12,48 +12,48 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ESTILOS (TEMA OSCURO PRO) */
+        /* ESTILOS GENERALES (TEMA OSCURO) */
         * { box-sizing: border-box; touch-action: manipulation; }
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #fce7f3; margin: 0; padding: 10px; text-align: center; }
         
         .card { background: #1e1e1e; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 600px; margin: 10px auto; border: 1px solid #333; }
         
-        button { width: 100%; padding: 14px; background: #be185d; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 15px; transition: 0.2s; }
+        button { width: 100%; padding: 14px; background: #be185d; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 15px; transition: 0.2s; cursor: pointer; }
         button:disabled { background: #444; color: #888; opacity: 0.5; }
         button:active { transform: scale(0.98); }
         
         input { width: 100%; padding: 12px; background: #333; border: 2px solid #555; border-radius: 10px; color: white; text-align: center; font-size: 16px; outline: none; margin-bottom: 10px; }
         input:focus { border-color: #be185d; }
-        
-        /* GRID DE COLORES */
-        .grid-wrapper { overflow-x: auto; padding-bottom: 10px; display: flex; justify-content: center; }
-        .color-grid { 
-            display: grid; 
-            grid-template-columns: repeat(20, 1fr); 
-            gap: 1px; 
-            background: #000; 
-            padding: 2px; 
-            border-radius: 6px; 
-            min-width: 340px;
-        }
-        .color-cell { aspect-ratio: 1; border-radius: 1px; cursor: pointer; position: relative; }
-        
-        /* COORDENADAS */
-        .coord-box { background: #be185d; color: white; padding: 5px 15px; border-radius: 5px; font-weight: bold; display: inline-block; margin-bottom: 10px; font-size: 24px; letter-spacing: 2px; border: 2px solid #fbcfe8; }
-        
-        /* MARCAS */
-        .target-star::after { content: "★"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 10px; text-shadow: 0 0 3px black; pointer-events: none; }
-        
-        .guess-mark-1 { border: 2px solid rgba(255,255,255,0.5); z-index: 5; } 
-        .guess-mark-current { box-shadow: 0 0 0 2px white, 0 0 10px #be185d; z-index: 10; transform: scale(1.15); border-radius: 2px; }
 
+        /* ESTILOS MENU SELECCIÓN */
+        .game-btn { padding: 20px; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid transparent; }
+        .btn-colors { background: linear-gradient(45deg, #ef4444, #eab308, #3b82f6); }
+        .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
+
+        /* ESTILOS DIAL (WAVELENGTH) */
+        .dial-container { position: relative; width: 300px; height: 160px; margin: 20px auto; overflow: hidden; }
+        .dial-bg { width: 300px; height: 300px; background: conic-gradient(from 270deg, #374151 0deg, #374151 180deg, transparent 180deg); border-radius: 50%; position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+        .target-zone { position: absolute; top: 0; left: 0; width: 300px; height: 300px; border-radius: 50%; background: conic-gradient(from 270deg, transparent 0deg, transparent calc(var(--deg) - 15deg), #fbbf24 calc(var(--deg) - 15deg), #f59e0b calc(var(--deg) - 5deg), #ef4444 calc(var(--deg) - 2deg), #ef4444 calc(var(--deg) + 2deg), #f59e0b calc(var(--deg) + 5deg), #fbbf24 calc(var(--deg) + 15deg), transparent calc(var(--deg) + 15deg)); transform: rotate(-90deg); opacity: 0; transition: opacity 0.5s; }
+        .visible { opacity: 1; }
+        .needle { width: 4px; height: 140px; background: #ef4444; position: absolute; bottom: -10px; left: 50%; transform-origin: bottom center; margin-left: -2px; transition: transform 0.1s linear; border-radius: 2px; box-shadow: 0 0 5px red; }
+        .knob { width: 30px; height: 30px; background: #e5e7eb; border-radius: 50%; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); z-index: 20; }
+        .topic-card { background: #312e81; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #6366f1; margin-bottom: 10px; }
+
+        /* ESTILOS COLORES */
+        .grid-wrapper { overflow-x: auto; padding-bottom: 10px; display: flex; justify-content: center; }
+        .color-grid { display: grid; grid-template-columns: repeat(20, 1fr); gap: 1px; background: #000; padding: 2px; border-radius: 6px; min-width: 340px; }
+        .color-cell { aspect-ratio: 1; border-radius: 1px; cursor: pointer; position: relative; }
+        .coord-box { background: #be185d; padding: 2px 8px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 18px; margin-bottom: 5px; }
+        .target-star::after { content: "★"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 8px; pointer-events: none; text-shadow: 0 0 2px black; }
+        .guess-mark-current { box-shadow: 0 0 0 2px white, 0 0 8px #be185d; z-index: 10; transform: scale(1.2); }
+        .hint-display { background: #333; padding: 8px; border-radius: 6px; font-style: italic; border-left: 3px solid #be185d; text-align: left; margin: 5px 0; font-size: 14px; }
+        
         /* NOTIFICACIONES */
-        .hint-display { background: #333; padding: 10px; border-radius: 8px; font-style: italic; border-left: 4px solid #be185d; margin: 10px 0; text-align: left; }
-        .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; margin-top: 15px; }
+        .waiting-pulse { color: #888; font-style: italic; animation: pulse 1.5s infinite; font-size: 14px; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         
         /* CHAT */
-        .chat-btn { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; border: 2px solid white; box-shadow: 0 4px 10px black; }
+        .chat-btn { position: fixed; top: 10px; right: 10px; width: 40px; height: 40px; background: #be185d; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; border: 2px solid white; box-shadow: 0 2px 5px black; }
         .chat-overlay { position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; background: #222; border-top: 2px solid #be185d; z-index: 99; display: flex; flex-direction: column; }
     </style>
 </head>
@@ -62,7 +62,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 1. CLAVES FIREBASE ---
+        // --- CONFIGURACIÓN FIREBASE ---
         const firebaseConfig = {
           apiKey: "AIzaSyCbKOu5vwGbowuI5CfbygKJtYujAKa6zJ0",
           authDomain: "juegos-tiktok.firebaseapp.com",
@@ -76,337 +76,209 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 2. CONFIGURACIÓN DEL JUEGO ---
-        const COLS = 20; 
-        const ROWS = 15; 
-        const ROW_LABELS = "ABCDEFGHIJKLMNO".split('');
+        // ==========================================
+        // COMPONENTE 1: JUEGO DIAL (Wavelength)
+        // ==========================================
+        const TOPICS = [["Frío", "Caliente"], ["Feo", "Guapo"], ["Barato", "Caro"], ["Inútil", "Útil"], ["Aburrido", "Divertido"], ["Seco", "Mojado"], ["Fácil", "Difícil"], ["Odiado", "Amado"], ["Basura", "Tesoro"], ["Blando", "Duro"]];
 
-        const getColor = (r, c) => {
-            const hue = Math.floor((360 / COLS) * c);
-            let sat = 100, light = 50;
-            if (r < 5) { light = 100 - (r * 10); sat = 50 + (r * 10); } 
-            else if (r > 9) { light = 50 - ((r - 9) * 8); } 
-            return `hsl(${hue}, ${sat}%, ${light}%)`;
-        };
-
-        const ColorGame = ({ roomId, playerRole, roomData }) => {
-            const game = roomData.colorGame || {};
-            
-            // Lógica de roles
-            const isHostTurn = game.turn === 'host'; 
-            const amIHost = playerRole === 'host';
-            const iAmGiver = (isHostTurn && amIHost) || (!isHostTurn && !amIHost); // Yo doy la pista
-            const iAmGuesser = !iAmGiver; // Yo adivino y ELIJO
-
-            const actorName = isHostTurn ? roomData.players.host.name : roomData.players.guest.name; 
-            
-            // --- FUNCIONES DEL JUEGO ---
+        const DialGame = ({ roomId, playerRole, roomData, onBack }) => {
+            const game = roomData.dialGame || {};
+            const isHostTurn = game.turn === 'host';
+            const iAmPsychic = (isHostTurn && playerRole === 'host') || (!isHostTurn && playerRole === 'guest');
+            const iAmGuesser = !iAmPsychic;
 
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
-                
-                const r = Math.floor(Math.random() * ROWS);
-                const c = Math.floor(Math.random() * COLS);
-                const code = `${ROW_LABELS[r]}-${c + 1}`;
-
-                db.ref(`salas/${roomId}/colorGame`).set({
-                    turn: nextTurn,
-                    target: { r, c, code },
-                    step: 1, 
-                    hints: { h1: '', h2: '' },
-                    guesses: { g1: null, g2: null }, 
-                    currentCursor: null, 
-                    score: 0
-                });
+                const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                const target = Math.floor(Math.random() * 160) + 10; 
+                db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
 
-            const sendHint = (text) => {
-                if(!text) return;
-                const update = {};
-                if (game.step === 1) update['hints/h1'] = text;
-                if (game.step === 3) update['hints/h2'] = text;
-                
-                update['step'] = (game.step || 1) + 1; 
-                update['currentCursor'] = null; 
-                db.ref(`salas/${roomId}/colorGame`).update(update);
-            };
-
-            const touchGrid = (r, c) => {
-                if (!iAmGuesser) return; 
-                if (game.step !== 2 && game.step !== 4) return; 
-                
-                db.ref(`salas/${roomId}/colorGame`).update({ currentCursor: {r, c} });
-            };
-
+            const sendHint = (txt) => txt && db.ref(`salas/${roomId}/dialGame`).update({ hint: txt, phase: 'GUESSING' });
+            const moveNeedle = (val) => iAmGuesser && game.phase === 'GUESSING' && db.ref(`salas/${roomId}/dialGame`).update({ needleAngle: parseInt(val) });
             const confirmGuess = () => {
-                if (!game.currentCursor) return alert("Marca un color en el mapa primero.");
-                
-                const update = {};
-                if (game.step === 2) {
-                    update['guesses/g1'] = game.currentCursor;
-                    update['step'] = 3; 
-                } else if (game.step === 4) {
-                    update['guesses/g2'] = game.currentCursor;
-                    update['step'] = 5; 
-                    
-                    const tr = game.target.r; const tc = game.target.c;
-                    const gr = game.currentCursor.r; const gc = game.currentCursor.c;
-                    const dist = Math.max(Math.abs(tr - gr), Math.abs(tc - gc));
-                    
-                    let pts = 0;
-                    if (dist === 0) pts = 3;
-                    else if (dist <= 1) pts = 2;
-                    else if (dist <= 3) pts = 1;
-                    update['score'] = pts;
-                }
-                update['currentCursor'] = null;
-                db.ref(`salas/${roomId}/colorGame`).update(update);
+                let pts = 0, diff = Math.abs(game.targetAngle - game.needleAngle);
+                if (diff <= 4) pts = 4; else if (diff <= 12) pts = 3; else if (diff <= 22) pts = 2;
+                db.ref(`salas/${roomId}/dialGame`).update({ phase: 'RESULT', score: pts });
             };
 
-            // --- RENDERIZADO ---
-
-            // Pantalla de Inicio
-            if (!game.turn) {
-                return (
-                    <div className="card">
-                        <h2>🎨 Modo 2 Rondas</h2>
-                        <p>Objetivo aleatorio. 2 Oportunidades.</p>
-                        {amIHost ? 
-                            <button onClick={startTurn}>INICIAR PARTIDA</button> : 
-                            <p className="waiting-pulse">Esperando al Host...</p>}
-                    </div>
-                );
-            }
-
-            // Protección contra pantalla negra
-            if (!game.target) return <div className="card"><p>Cargando ronda...</p></div>;
+            if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>VOLVER AL MENÚ</button></div>;
 
             return (
-                <div className="card" style={{maxWidth:'100%', padding:10}}>
+                <div className="card">
+                    <button onClick={onBack} style={{padding:5, fontSize:12, width:'auto', background:'transparent', border:'1px solid #555', float:'right'}}>SALIR</button>
+                    <div style={{clear:'both', marginBottom:10, fontSize:12, color:'#aaa'}}>TURNO: {isHostTurn ? roomData.players.host.name : roomData.players.guest.name}</div>
                     
-                    <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#888', marginBottom:10}}>
-                        <span>TURNO: {actorName}</span>
-                        <span>PASO: {game.step}/5</span>
+                    <div className="topic-card"><span style={{color:'#93c5fd'}}>{game.topic[0]}</span><span>vs</span><span style={{color:'#fda4af'}}>{game.topic[1]}</span></div>
+
+                    <div className="dial-container">
+                        <div className="dial-bg"></div>
+                        <div className={`target-zone ${(iAmPsychic || game.phase === 'RESULT') ? 'visible' : ''}`} style={{ '--deg': `${game.targetAngle}deg` }}></div>
+                        <div className="needle" style={{ transform: `rotate(${game.needleAngle - 90}deg)` }}></div>
+                        <div className="knob"></div>
                     </div>
 
-                    {/* ZONA DE QUIEN DA LAS PISTAS (GIVER) */}
-                    {iAmGiver && (
+                    {iAmPsychic && (
                         <div>
-                            {game.step < 5 && (
-                                <div style={{background:'#333', padding:10, borderRadius:8, marginBottom:10}}>
-                                    <div style={{fontSize:12}}>TU OBJETIVO:</div>
-                                    <div className="coord-box">{game.target?.code}</div>
-                                    <div style={{height:20, background:getColor(game.target.r, game.target.c), width:'100%', borderRadius:4}}></div>
-                                </div>
-                            )}
-
-                            {/* Pista 1 */}
-                            {game.step === 1 && (
-                                <div>
-                                    <p>1. Escribe la primera pista:</p>
-                                    <input id="h1" placeholder="Ej: Es verde..." />
-                                    <button onClick={()=>sendHint(document.getElementById('h1').value)}>ENVIAR PISTA 1</button>
-                                </div>
-                            )}
-
-                            {/* Esperando confirmación 1 */}
-                            {game.step === 2 && (
-                                <div>
-                                    <p className="waiting-pulse">Tu pareja está decidiendo y confirmando...</p>
-                                    {game.currentCursor && <p style={{fontSize:12, color:'#10b981'}}>¡Está tocando el mapa!</p>}
-                                </div>
-                            )}
-
-                            {/* Pista 2 */}
-                            {game.step === 3 && (
-                                <div>
-                                    <div className="hint-display" style={{opacity:0.6}}>Pista 1: {game.hints?.h1}</div>
-                                    <p>2. ¡Dales otra oportunidad! Pista 2:</p>
-                                    <input id="h2" placeholder="Ej: Más oscuro..." />
-                                    <button onClick={()=>sendHint(document.getElementById('h2').value)}>ENVIAR PISTA 2</button>
-                                </div>
-                            )}
-
-                            {/* Esperando confirmación 2 */}
-                            {game.step === 4 && (
-                                <div>
-                                    <p className="waiting-pulse">Tu pareja está decidiendo el final...</p>
-                                    {game.currentCursor && <p style={{fontSize:12, color:'#10b981'}}>¡Está tocando el mapa!</p>}
-                                </div>
-                            )}
+                            {game.phase === 'HINTING' && <><input id="h" placeholder="Tu pista..." /><button onClick={()=>sendHint(document.getElementById('h').value)}>ENVIAR PISTA</button></>}
+                            {game.phase === 'GUESSING' && <p className="waiting-pulse">Tu pareja está moviendo la aguja...</p>}
+                            {game.phase === 'RESULT' && <p>Puntuación: {game.score}</p>}
                         </div>
                     )}
-
-                    {/* ZONA DE QUIEN ADIVINA Y CONFIRMA (GUESSER) */}
                     {iAmGuesser && (
                         <div>
-                            {/* Esperando que escriban la pista */}
-                            {(game.step === 1 || game.step === 3) && (
-                                <div style={{padding:20, color:'#888', fontStyle:'italic'}}>
-                                    Esperando pista de tu pareja...
-                                </div>
-                            )}
-
-                            {/* Elegir y Confirmar 1 */}
-                            {game.step === 2 && (
-                                <div>
-                                    <div className="hint-display">Pista 1: <b>{game.hints?.h1}</b></div>
-                                    <p style={{color:'#10b981'}}>1. ELIGE Y CONFIRMA</p>
-                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#be185d' : '#444'}}>
-                                        CONFIRMAR ELECCIÓN
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Elegir y Confirmar 2 */}
-                            {game.step === 4 && (
-                                <div>
-                                    <div className="hint-display">Pista 2: <b>{game.hints?.h2}</b></div>
-                                    <p style={{color:'#10b981'}}>2. ELIGE Y TERMINA</p>
-                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#be185d' : '#444'}}>
-                                        CONFIRMAR FINAL
-                                    </button>
-                                </div>
-                            )}
+                            {game.phase === 'HINTING' && <p className="waiting-pulse">Esperando pista...</p>}
+                            {game.phase === 'GUESSING' && <><div className="hint-display" style={{textAlign:'center'}}>"{game.hint}"</div><input type="range" min="0" max="180" value={game.needleAngle} onChange={e=>moveNeedle(e.target.value)} style={{width:'100%', accentColor:'#ef4444'}} /><button onClick={confirmGuess} style={{background:'#ef4444'}}>BLOQUEAR</button></>}
+                            {game.phase === 'RESULT' && <><div style={{fontSize:40, color:'#fbbf24'}}>+{game.score}</div><button onClick={startTurn}>SIGUIENTE</button></>}
                         </div>
                     )}
-
-                    {/* RESULTADOS (Paso 5) */}
-                    {game.step === 5 && (
-                        <div style={{margin:'20px 0'}}>
-                            <div style={{fontSize:50, fontWeight:900, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div>
-                            <div style={{display:'flex', justifyContent:'center', gap:10, marginTop:10}}>
-                                <div>REAL<br/><div className="coord-box" style={{fontSize:14}}>{game.target?.code}</div></div>
-                                <div style={{width:40, height:40, background:getColor(game.target.r, game.target.c), border:'2px solid white', borderRadius:5}}></div>
-                            </div>
-                            
-                            {/* EL GUESSER TIENE EL BOTÓN DE SIGUIENTE */}
-                            {iAmGuesser ? (
-                                <button onClick={startTurn}>SIGUIENTE TURNO ➤</button>
-                            ) : (
-                                <p className="waiting-pulse">Tu pareja está viendo el resultado...</p>
-                            )}
-                        </div>
-                    )}
-
-                    {/* TABLERO */}
-                    <div className="grid-wrapper">
-                        <div className="color-grid">
-                            {Array.from({ length: COLS * ROWS }).map((_, i) => {
-                                const r = Math.floor(i / COLS);
-                                const c = i % COLS;
-                                const color = getColor(r, c);
-
-                                const isTarget = (iAmGiver || game.step === 5) && game.target?.r === r && game.target?.c === c;
-                                const isCursor = game.currentCursor && game.currentCursor.r === r && game.currentCursor.c === c;
-                                const isGuess1 = game.guesses?.g1 && game.guesses.g1.r === r && game.guesses.g1.c === c;
-                                const isGuess2 = game.guesses?.g2 && game.guesses.g2.r === r && game.guesses.g2.c === c;
-
-                                let classes = "color-cell";
-                                if (isTarget) classes += " target-star";
-                                if (isCursor) classes += " guess-mark-current";
-                                if (isGuess1) classes += " guess-mark-1"; 
-                                if (isGuess2 && game.step === 5) classes += " guess-mark-current";
-
-                                return (
-                                    <div 
-                                        key={i} 
-                                        className={classes}
-                                        style={{ backgroundColor: color }}
-                                        onClick={() => touchGrid(r, c)}
-                                    ></div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
                 </div>
             );
         };
 
-        // --- APP SHELL ---
+        // ==========================================
+        // COMPONENTE 2: JUEGO COLORES
+        // ==========================================
+        const ColorGame = ({ roomId, playerRole, roomData, onBack }) => {
+            const game = roomData.colorGame || {};
+            const isHostTurn = game.turn === 'host';
+            const iAmGiver = (isHostTurn && playerRole === 'host') || (!isHostTurn && playerRole === 'guest');
+            const iAmGuesser = !iAmGiver;
+            const COLS=20, ROWS=15, LABELS="ABCDEFGHIJKLMNO".split('');
+
+            const getColor = (r, c) => {
+                const hue = Math.floor((360 / COLS) * c);
+                let l = 50, s = 100;
+                if (r < 5) { l = 100 - (r * 10); s = 50 + (r * 10); } else if (r > 9) { l = 50 - ((r - 9) * 8); }
+                return `hsl(${hue}, ${s}%, ${l}%)`;
+            };
+
+            const startTurn = () => {
+                const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
+                const r = Math.floor(Math.random() * ROWS), c = Math.floor(Math.random() * COLS);
+                db.ref(`salas/${roomId}/colorGame`).set({ turn: nextTurn, target: {r, c, code: `${LABELS[r]}-${c+1}`}, step: 1, score: 0 });
+            };
+
+            const sendHint = (txt) => txt && db.ref(`salas/${roomId}/colorGame`).update({ [`hints/h${game.step === 1 ? 1 : 2}`]: txt, step: game.step + 1, currentCursor: null });
+            const touchGrid = (r, c) => iAmGuesser && (game.step === 2 || game.step === 4) && db.ref(`salas/${roomId}/colorGame`).update({ currentCursor: {r, c} });
+            
+            const confirmGuess = () => {
+                if(!game.currentCursor) return;
+                const nextStep = game.step + 1;
+                const update = { step: nextStep, [`guesses/g${game.step===2?1:2}`]: game.currentCursor, currentCursor: null };
+                if (game.step === 4) {
+                    const dist = Math.max(Math.abs(game.target.r - game.currentCursor.r), Math.abs(game.target.c - game.currentCursor.c));
+                    update.score = dist === 0 ? 3 : (dist <= 1 ? 2 : (dist <= 3 ? 1 : 0));
+                }
+                db.ref(`salas/${roomId}/colorGame`).update(update);
+            };
+
+            if (!game.turn) return <div className="card"><h2>🎨 Colores</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>VOLVER AL MENÚ</button></div>;
+            if (!game.target) return <div className="card">Cargando...</div>;
+
+            return (
+                <div className="card" style={{maxWidth:'100%', padding:10}}>
+                    <button onClick={onBack} style={{padding:5, fontSize:12, width:'auto', background:'transparent', border:'1px solid #555', float:'right'}}>SALIR</button>
+                    <div style={{clear:'both', marginBottom:10, fontSize:12, color:'#aaa'}}>TURNO: {isHostTurn ? roomData.players.host.name : roomData.players.guest.name} | PASO: {game.step}/5</div>
+                    
+                    {iAmGiver && (
+                        <div>
+                            {game.step < 5 && <div style={{background:'#333', padding:5, marginBottom:5}}><div className="coord-box">{game.target.code}</div><div style={{height:15, background:getColor(game.target.r, game.target.c), width:'100%'}}></div></div>}
+                            {(game.step===1 || game.step===3) && <><input id="hin" placeholder={`Pista ${game.step===1?1:2}...`} /><button onClick={()=>sendHint(document.getElementById('hin').value)}>ENVIAR</button></>}
+                            {(game.step===2 || game.step===4) && <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor?'#10b981':'#444'}}>CONFIRMAR ELECCIÓN</button>}
+                        </div>
+                    )}
+                    {iAmGuesser && (
+                        <div>
+                            {(game.step===1 || game.step===3) && <p className="waiting-pulse">Esperando pista...</p>}
+                            {(game.step===2 || game.step===4) && <><div className="hint-display">"{game.step===2 ? game.hints?.h1 : game.hints?.h2}"</div><p style={{color:'#10b981', margin:5}}>¡TOCA EL MAPA!</p></>}
+                            {(game.step===2 || game.step===4) && <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor?'#be185d':'#444'}}>{game.step===2?'CONFIRMAR PRIMERA':'CONFIRMAR FINAL'}</button>}
+                        </div>
+                    )}
+                    {game.step === 5 && (
+                        <div><div style={{fontSize:40, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div><div style={{display:'flex',justifyContent:'center', gap:5}}><div className="coord-box" style={{fontSize:14}}>{game.target.code}</div><div style={{width:20, height:20, background:getColor(game.target.r, game.target.c)}}></div></div>
+                        {iAmGuesser ? <button onClick={startTurn}>SIGUIENTE</button> : <p className="waiting-pulse">Esperando...</p>}</div>
+                    )}
+
+                    <div className="grid-wrapper">
+                        <div className="color-grid">
+                            {Array.from({ length: COLS * ROWS }).map((_, i) => {
+                                const r = Math.floor(i / COLS), c = i % COLS;
+                                const isTarget = (iAmGiver || game.step === 5) && game.target.r === r && game.target.c === c;
+                                const isCur = game.currentCursor && game.currentCursor.r === r && game.currentCursor.c === c;
+                                const isG1 = game.guesses?.g1 && game.guesses.g1.r === r && game.guesses.g1.c === c;
+                                let cls = "color-cell";
+                                if (isTarget) cls += " target-star";
+                                if (isCur) cls += " guess-mark-current";
+                                return <div key={i} className={cls} style={{ backgroundColor: getColor(r, c), border: isG1 ? '1px solid rgba(255,255,255,0.5)' : 'none' }} onClick={() => touchGrid(r, c)}></div>;
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // APP PRINCIPAL (Lobby + Selector)
+        // ==========================================
         function App() {
-            const [view, setView] = React.useState('lobby');
             const [playerName, setPlayerName] = React.useState(localStorage.getItem('name') || '');
             const [roomId, setRoomId] = React.useState('');
-            const [playerRole, setPlayerRole] = React.useState('');
+            const [view, setView] = React.useState('lobby'); // lobby, waiting, game
             const [roomData, setRoomData] = React.useState(null);
-            
             const [showChat, setShowChat] = React.useState(false);
             const [chatMsg, setChatMsg] = React.useState('');
-            const [messages, setMessages] = React.useState([]);
+            const [msgs, setMsgs] = React.useState([]);
 
             React.useEffect(() => { localStorage.setItem('name', playerName); }, [playerName]);
-
             React.useEffect(() => {
                 if (roomId) {
                     db.ref('salas/' + roomId).on('value', snap => {
-                        const data = snap.val();
-                        if (data) {
-                            setRoomData(data);
-                            if (view === 'waiting' && data.players.guest) setView('game');
-                            if (data.chat) setMessages(Object.values(data.chat));
+                        const d = snap.val();
+                        if (d) {
+                            setRoomData(d);
+                            if (view === 'waiting' && d.players.guest) setView('game'); // Auto-entrar
+                            if (d.chat) setMsgs(Object.values(d.chat));
                         }
                     });
                 }
             }, [roomId, view]);
 
-            const createRoom = () => {
-                const id = Math.random().toString(36).substring(2,6).toUpperCase();
-                db.ref('salas/'+id).set({ players: { host: { name: playerName } }, gameState: 'LOBBY' });
-                setRoomId(id); setPlayerRole('host'); setView('waiting');
-            };
+            const create = () => { const id=Math.random().toString(36).substr(2,4).toUpperCase(); db.ref('salas/'+id).set({players:{host:{name:playerName}}, gameState:'MENU'}); setRoomId(id); setView('waiting'); };
+            const join = (c) => db.ref('salas/'+c).once('value', s => { if(s.exists()){ db.ref('salas/'+c+'/players/guest').set({name:playerName}); setRoomId(c); setView('game'); } });
+            const sendC = () => chatMsg && db.ref('salas/'+roomId+'/chat').push({user:playerName, text:chatMsg}) && setChatMsg('');
+            
+            const setGame = (g) => db.ref(`salas/${roomId}`).update({ gameState: g });
 
-            const joinRoom = (code) => {
-                db.ref('salas/'+code).once('value', snap => {
-                    if(snap.exists()) {
-                        db.ref('salas/'+code+'/players/guest').set({ name: playerName });
-                        setRoomId(code); setPlayerRole('guest'); setView('game');
-                    }
-                });
-            };
+            // RENDER
+            if (view === 'lobby') return (
+                <div className="card"><h1>Juegos Parejas ❤️</h1><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tu Nombre" /><button onClick={create}>Crear Sala</button><br/><br/><input id="c" placeholder="CÓDIGO" style={{textTransform:'uppercase'}} /><button style={{background:'#6366f1'}} onClick={()=>join(document.getElementById('c').value.toUpperCase())}>Unirse</button></div>
+            );
 
-            const sendChat = () => {
-                if(!chatMsg) return;
-                db.ref('salas/'+roomId+'/chat').push({ user: playerName, text: chatMsg });
-                setChatMsg('');
-            };
+            if (view === 'waiting') return <div className="card"><h2>{roomId}</h2><p className="waiting-pulse">Esperando a tu pareja...</p></div>;
 
-            return (
+            // DENTRO DE LA SALA
+            if (!roomData) return <div className="card">Cargando...</div>;
+            const playerRole = roomData.players.host.name === playerName ? 'host' : 'guest';
+            
+            // Si el estado es MENU, mostramos los botones
+            if (roomData.gameState === 'MENU') return (
                 <div>
-                    {roomId && (
-                        <>
-                            <div className="chat-btn" onClick={() => setShowChat(!showChat)}>💬</div>
-                            {showChat && (
-                                <div className="chat-overlay">
-                                    <div style={{flex:1, overflowY:'auto', padding:20, textAlign:'left'}}>
-                                        {messages.map((m,i) => <div key={i} style={{marginBottom:8}}><b>{m.user}:</b> {m.text}</div>)}
-                                    </div>
-                                    <div style={{display:'flex', padding:10, background:'#333'}}>
-                                        <input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0, flex:1}} placeholder="..."/>
-                                        <button onClick={sendChat} style={{width:'auto', margin:'0 0 0 5px', padding:'0 15px'}}>➤</button>
-                                    </div>
-                                    <button onClick={()=>setShowChat(false)} style={{margin:0, borderRadius:0, padding:10, background:'#111'}}>CERRAR</button>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {view === 'lobby' && (
-                        <div className="card">
-                            <h1>Parejas ❤️</h1>
-                            <input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tu Nombre" />
-                            <button onClick={createRoom}>Crear Sala</button>
-                            <input id="c" placeholder="CÓDIGO" style={{textTransform:'uppercase', marginTop:20}}/>
-                            <button style={{background:'#6366f1'}} onClick={()=>joinRoom(document.getElementById('c').value.toUpperCase())}>Unirse</button>
-                        </div>
-                    )}
-
-                    {view === 'waiting' && <div className="card"><h2>{roomId}</h2><p>Esperando...</p></div>}
-
-                    {view === 'game' && roomData && <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} />}
+                    {roomId && <><div className="chat-btn" onClick={()=>setShowChat(!showChat)}>💬</div>{showChat && <div className="chat-overlay"><div style={{flex:1,overflowY:'auto',padding:10,textAlign:'left'}}>{msgs.map((m,i)=><div key={i}><b>{m.user}:</b> {m.text}</div>)}</div><div style={{display:'flex',padding:10}}><input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} style={{marginBottom:0,flex:1}} /><button onClick={sendC} style={{width:'auto',margin:0}}>➤</button></div><button onClick={()=>setShowChat(false)} style={{margin:0,borderRadius:0}}>CERRAR</button></div>}</>}
+                    
+                    <div className="card">
+                        <h3>Elige a qué jugar</h3>
+                        <button className="game-btn btn-colors" onClick={()=>setGame('COLOR')}>🎨 COLORES</button>
+                        <button className="game-btn btn-dial" onClick={()=>setGame('DIAL')}>🌊 EL DIAL</button>
+                    </div>
                 </div>
             );
+
+            // Si hay un juego seleccionado
+            if (roomData.gameState === 'COLOR') return <ColorGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />;
+            if (roomData.gameState === 'DIAL') return <DialGame roomId={roomId} playerRole={playerRole} roomData={roomData} onBack={()=>setGame('MENU')} />;
+            
+            return <div>Error de estado</div>;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
