@@ -340,7 +340,7 @@
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 const topic = DIAL_TOPICS[Math.floor(Math.random() * DIAL_TOPICS.length)];
-                const target = Math.floor(Math.random() * 140) + 20; 
+                const target = Math.floor(Math.random() * 181); 
                 db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
             const sendHint = (txt) => txt && db.ref(`salas/${roomId}/dialGame`).update({ hint: txt, phase: 'GUESSING' });
