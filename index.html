@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego Parejas: Control Total</title>
+    <title>Juego Parejas: Control Guesser</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -96,7 +96,7 @@
             const isHostTurn = game.turn === 'host'; 
             const amIHost = playerRole === 'host';
             const iAmGiver = (isHostTurn && amIHost) || (!isHostTurn && !amIHost); // Yo doy la pista
-            const iAmGuesser = !iAmGiver; // Yo adivino
+            const iAmGuesser = !iAmGiver; // Yo adivino y ELIJO
 
             const actorName = isHostTurn ? roomData.players.host.name : roomData.players.guest.name; 
             
@@ -139,7 +139,7 @@
             };
 
             const confirmGuess = () => {
-                if (!game.currentCursor) return alert("Espera a que tu pareja marque un color.");
+                if (!game.currentCursor) return alert("Marca un color en el mapa primero.");
                 
                 const update = {};
                 if (game.step === 2) {
@@ -189,7 +189,7 @@
                         <span>PASO: {game.step}/5</span>
                     </div>
 
-                    {/* ZONA DE CONTROL (GIVER) */}
+                    {/* ZONA DE QUIEN DA LAS PISTAS (GIVER) */}
                     {iAmGiver && (
                         <div>
                             {game.step < 5 && (
@@ -200,6 +200,7 @@
                                 </div>
                             )}
 
+                            {/* Pista 1 */}
                             {game.step === 1 && (
                                 <div>
                                     <p>1. Escribe la primera pista:</p>
@@ -208,15 +209,15 @@
                                 </div>
                             )}
 
+                            {/* Esperando confirmación 1 */}
                             {game.step === 2 && (
                                 <div>
-                                    <p>👀 Tu pareja está eligiendo...</p>
-                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#10b981' : '#444'}}>
-                                        {game.currentCursor ? 'CONFIRMAR ESTA ELECCIÓN' : 'ESPERANDO QUE TOQUE...'}
-                                    </button>
+                                    <p className="waiting-pulse">Tu pareja está decidiendo y confirmando...</p>
+                                    {game.currentCursor && <p style={{fontSize:12, color:'#10b981'}}>¡Está tocando el mapa!</p>}
                                 </div>
                             )}
 
+                            {/* Pista 2 */}
                             {game.step === 3 && (
                                 <div>
                                     <div className="hint-display" style={{opacity:0.6}}>Pista 1: {game.hints?.h1}</div>
@@ -226,39 +227,51 @@
                                 </div>
                             )}
 
+                            {/* Esperando confirmación 2 */}
                             {game.step === 4 && (
                                 <div>
-                                    <p>👀 Segundo intento...</p>
-                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#10b981' : '#444'}}>
-                                        {game.currentCursor ? 'CONFIRMAR FINAL' : 'ESPERANDO QUE TOQUE...'}
-                                    </button>
+                                    <p className="waiting-pulse">Tu pareja está decidiendo el final...</p>
+                                    {game.currentCursor && <p style={{fontSize:12, color:'#10b981'}}>¡Está tocando el mapa!</p>}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* ZONA DE JUEGO (GUESSER) */}
+                    {/* ZONA DE QUIEN ADIVINA Y CONFIRMA (GUESSER) */}
                     {iAmGuesser && (
                         <div>
+                            {/* Esperando que escriban la pista */}
                             {(game.step === 1 || game.step === 3) && (
                                 <div style={{padding:20, color:'#888', fontStyle:'italic'}}>
                                     Esperando pista de tu pareja...
                                 </div>
                             )}
 
-                            {(game.step === 2 || game.step === 4) && (
+                            {/* Elegir y Confirmar 1 */}
+                            {game.step === 2 && (
                                 <div>
-                                    <div className="hint-display">
-                                        Pista: <b>{game.step === 2 ? game.hints?.h1 : game.hints?.h2}</b>
-                                    </div>
-                                    <p style={{color:'#10b981'}}>¡TOCA EL COLOR EN EL MAPA!</p>
-                                    {game.currentCursor && <div style={{fontSize:12, color:'#aaa'}}>Has marcado, espera a que confirmen.</div>}
+                                    <div className="hint-display">Pista 1: <b>{game.hints?.h1}</b></div>
+                                    <p style={{color:'#10b981'}}>1. ELIGE Y CONFIRMA</p>
+                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#be185d' : '#444'}}>
+                                        CONFIRMAR ELECCIÓN
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Elegir y Confirmar 2 */}
+                            {game.step === 4 && (
+                                <div>
+                                    <div className="hint-display">Pista 2: <b>{game.hints?.h2}</b></div>
+                                    <p style={{color:'#10b981'}}>2. ELIGE Y TERMINA</p>
+                                    <button onClick={confirmGuess} disabled={!game.currentCursor} style={{background: game.currentCursor ? '#be185d' : '#444'}}>
+                                        CONFIRMAR FINAL
+                                    </button>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* RESULTADOS (Paso 5) - CONTROLADO POR EL GIVER */}
+                    {/* RESULTADOS (Paso 5) */}
                     {game.step === 5 && (
                         <div style={{margin:'20px 0'}}>
                             <div style={{fontSize:50, fontWeight:900, color: game.score===3?'#10b981':'#fbbf24'}}>+{game.score} PUNTOS</div>
@@ -267,11 +280,11 @@
                                 <div style={{width:40, height:40, background:getColor(game.target.r, game.target.c), border:'2px solid white', borderRadius:5}}></div>
                             </div>
                             
-                            {/* AQUÍ ESTÁ EL CAMBIO: SOLO EL GIVER VE EL BOTÓN */}
-                            {iAmGiver ? (
+                            {/* EL GUESSER TIENE EL BOTÓN DE SIGUIENTE */}
+                            {iAmGuesser ? (
                                 <button onClick={startTurn}>SIGUIENTE TURNO ➤</button>
                             ) : (
-                                <p className="waiting-pulse">Esperando a que tu pareja inicie la siguiente ronda...</p>
+                                <p className="waiting-pulse">Tu pareja está viendo el resultado...</p>
                             )}
                         </div>
                     )}
