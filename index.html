@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego Parejas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Juego Parejas ❤️</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -12,20 +12,35 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #fdf2f8; color: #831843; margin: 0; padding: 20px; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid #fbcfe8; border-radius: 10px; font-size: 16px; text-align: center; outline: none; }
-        input:focus { border-color: #db2777; }
-        button { width: 100%; padding: 12px; background: #db2777; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fdf2f8; color: #831843; margin: 0; padding: 15px; text-align: center; height: 100vh; overflow: hidden; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(219, 39, 119, 0.15); max-width: 400px; margin: 20px auto; position: relative; }
+        h1 { margin-top: 0; color: #db2777; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #fbcfe8; border-radius: 12px; font-size: 18px; text-align: center; outline: none; transition: 0.3s; }
+        input:focus { border-color: #db2777; box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
+        button { width: 100%; padding: 15px; background: #db2777; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; touch-action: manipulation; }
+        button:active { transform: scale(0.96); }
         .btn-secondary { background: #8b5cf6; }
-        .status { margin-top: 20px; padding: 10px; background: #ecfdf5; color: #065f46; border-radius: 10px; border: 1px solid #a7f3d0; }
-        .code-display { font-size: 2em; letter-spacing: 5px; font-weight: bold; color: #db2777; margin: 10px 0; }
-        .waiting { animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .divider { display: flex; align-items: center; margin: 15px 0; color: #fda4af; font-weight: bold; }
+        .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid #fbcfe8; }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+        .code-box { font-size: 32px; letter-spacing: 5px; font-weight: 800; color: #db2777; margin: 15px 0; padding: 10px; background: #fdf2f8; border-radius: 10px; border: 2px dashed #fbcfe8; }
+        .status-badge { display: inline-block; padding: 8px 15px; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 15px; }
+        
+        /* Animaciones */
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
         /* Chat Flotante */
-        .chat-btn { position: fixed; top: 15px; right: 15px; background: white; padding: 10px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 1000; }
-        .chat-overlay { position: fixed; top: 70px; right: 20px; width: 300px; height: 400px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999; display: flex; flex-direction: column; overflow: hidden; border: 2px solid #fbcfe8; }
+        .chat-btn { position: fixed; top: 15px; right: 15px; width: 50px; height: 50px; background: white; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 100; border: 2px solid #fbcfe8; cursor: pointer; }
+        .chat-window { position: fixed; top: 75px; right: 15px; left: 15px; bottom: 20px; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 99; display: flex; flex-direction: column; border: 2px solid #db2777; max-width: 400px; margin: 0 auto; }
+        .chat-header { padding: 15px; background: #fdf2f8; border-bottom: 1px solid #fbcfe8; font-weight: bold; border-radius: 18px 18px 0 0; display: flex; justify-content: space-between; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #fff; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        .msg { padding: 8px 12px; margin-bottom: 8px; border-radius: 15px; max-width: 80%; font-size: 14px; }
+        .msg-me { background: #db2777; color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; }
+        .msg-other { background: #f3f4f6; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
     </style>
 </head>
 <body>
@@ -33,15 +48,15 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 1. CONFIGURACIÓN FIREBASE (¡PON TUS CLAVES AQUÍ!) ---
+        // --- TUS CLAVES DE FIREBASE ---
         const firebaseConfig = {
-            apiKey: "AQUI_TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            databaseURL: "TU_URL_DATABASE",
-            projectId: "TU_ID",
-            storageBucket: "...",
-            messagingSenderId: "...",
-            appId: "..."
+          apiKey: "AIzaSyCbKOu5vwGbowuI5CfbygKJtYujAKa6zJ0",
+          authDomain: "juegos-tiktok.firebaseapp.com",
+          databaseURL: "https://juegos-tiktok-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "juegos-tiktok",
+          storageBucket: "juegos-tiktok.firebasestorage.app",
+          messagingSenderId: "504168913042",
+          appId: "1:504168913042:web:e9eba88e01f94bcc7a2e4b"
         };
 
         // Inicializar Firebase
@@ -50,124 +65,206 @@
         }
         const db = firebase.database();
 
-        // --- 2. COMPONENTES DE LA APP ---
-
+        // --- COMPONENTE PRINCIPAL ---
         function App() {
-            const [view, setView] = React.useState('lobby'); // lobby, game
-            const [playerName, setPlayerName] = React.useState(localStorage.getItem('nombre') || '');
+            // Estados
+            const [view, setView] = React.useState('lobby'); // 'lobby', 'waiting', 'game'
+            const [playerName, setPlayerName] = React.useState(localStorage.getItem('player_name') || '');
             const [roomId, setRoomId] = React.useState('');
-            const [playerRole, setPlayerRole] = React.useState('');
             const [roomData, setRoomData] = React.useState(null);
+            const [playerRole, setPlayerRole] = React.useState(null); // 'host' o 'guest'
+            
+            // Chat
             const [showChat, setShowChat] = React.useState(false);
+            const [chatMsg, setChatMsg] = React.useState('');
+            const [messages, setMessages] = React.useState([]);
 
-            // Guardar nombre
-            React.useEffect(() => { localStorage.setItem('nombre', playerName); }, [playerName]);
+            // Guardar nombre localmente
+            React.useEffect(() => {
+                if(playerName) localStorage.setItem('player_name', playerName);
+            }, [playerName]);
 
-            // Escuchar cambios de la sala
+            // Escuchar cambios en la sala (Conexión Tiempo Real)
             React.useEffect(() => {
                 if (roomId) {
                     const roomRef = db.ref('salas/' + roomId);
+                    
+                    // Escuchar datos de la sala
                     roomRef.on('value', (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
                             setRoomData(data);
-                            if (data.players.guest && view === 'lobby') {
+                            // Si soy host y entra un invitado, ir al juego
+                            if (view === 'waiting' && data.players.guest) {
                                 setView('game');
+                            }
+                            // Cargar mensajes de chat
+                            if (data.chat) {
+                                const msgs = Object.values(data.chat);
+                                setMessages(msgs);
                             }
                         }
                     });
+
                     return () => roomRef.off();
                 }
-            }, [roomId]);
+            }, [roomId, view]);
 
-            // Crear Sala
+            // FUNCIONES
             const createRoom = () => {
-                if (!playerName) return alert("¡Pon tu nombre!");
+                if (!playerName) return alert("¡Dime cómo te llamas amor! 😠");
+                // Generar ID de 4 letras/números
                 const newId = Math.random().toString(36).substring(2, 6).toUpperCase();
+                
                 db.ref('salas/' + newId).set({
-                    players: { host: { name: playerName } },
-                    gameState: 'LOBBY'
+                    players: {
+                        host: { name: playerName, score: 0 }
+                    },
+                    gameState: 'LOBBY',
+                    createdAt: Date.now()
                 });
+
                 setRoomId(newId);
                 setPlayerRole('host');
                 setView('waiting');
             };
 
-            // Unirse a Sala
             const joinRoom = (code) => {
-                if (!playerName) return alert("¡Pon tu nombre!");
+                if (!playerName) return alert("¡Dime cómo te llamas! 😠");
+                if (!code) return alert("Falta el código");
+                
                 const codeUpper = code.toUpperCase();
-                db.ref('salas/' + codeUpper).once('value', (snapshot) => {
+                const roomRef = db.ref('salas/' + codeUpper);
+
+                roomRef.once('value', (snapshot) => {
                     if (snapshot.exists()) {
-                        db.ref('salas/' + codeUpper + '/players/guest').set({ name: playerName });
-                        setRoomId(codeUpper);
-                        setPlayerRole('guest');
-                        setView('game');
+                        const data = snapshot.val();
+                        if (data.players.guest) {
+                            alert("¡La sala ya está llena!");
+                        } else {
+                            // Unirse
+                            db.ref('salas/' + codeUpper + '/players/guest').set({
+                                name: playerName,
+                                score: 0
+                            });
+                            setRoomId(codeUpper);
+                            setPlayerRole('guest');
+                            setView('game');
+                        }
                     } else {
-                        alert("Sala no encontrada");
+                        alert("Esa sala no existe amor :(");
                     }
                 });
             };
 
-            // VISTAS
+            const sendMessage = () => {
+                if (!chatMsg.trim()) return;
+                const newMsgRef = db.ref('salas/' + roomId + '/chat').push();
+                newMsgRef.set({
+                    user: playerName,
+                    text: chatMsg,
+                    timestamp: Date.now()
+                });
+                setChatMsg('');
+            };
+
+            // RENDERIZADO (VISTAS)
             return (
                 <div>
-                    {/* Botón Chat Global */}
-                    {view !== 'lobby' && (
-                        <div className="chat-btn" onClick={() => setShowChat(!showChat)}>💬</div>
-                    )}
-                    
-                    {showChat && (
-                        <div className="chat-overlay">
-                            <div style={{padding: 10, background:'#fdf2f8', borderBottom:'1px solid #ddd'}}>Chat de Pareja ❤️</div>
-                            <div style={{flex:1, padding:10, background:'white'}}>Próximamente...</div>
-                        </div>
+                    {/* Botón Chat (Solo si estamos en sala) */}
+                    {roomId && (
+                        <>
+                            <div className="chat-btn" onClick={() => setShowChat(!showChat)}>
+                                {showChat ? '✖️' : '💬'}
+                            </div>
+                            {showChat && (
+                                <div className="chat-window">
+                                    <div className="chat-header">
+                                        <span>Chat de Pareja ❤️</span>
+                                        <span onClick={() => setShowChat(false)}>🔽</span>
+                                    </div>
+                                    <div className="chat-messages">
+                                        {messages.length === 0 && <p style={{color:'#ccc', textAlign:'center'}}>Habla por aquí...</p>}
+                                        {messages.map((m, i) => (
+                                            <div key={i} className={`msg ${m.user === playerName ? 'msg-me' : 'msg-other'}`}>
+                                                <strong>{m.user}: </strong> {m.text}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="chat-input-area">
+                                        <input 
+                                            value={chatMsg} 
+                                            onChange={e => setChatMsg(e.target.value)} 
+                                            placeholder="..." 
+                                            style={{margin:0}}
+                                        />
+                                        <button onClick={sendMessage} style={{width:'auto', margin:0, padding:'0 15px'}}>➤</button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
 
-                    <h1 style={{color: '#be185d'}}>Nuestra App ❤️</h1>
-
-                    {/* VISTA 1: LOBBY */}
+                    {/* VISTA 1: LOBBY (Inicio) */}
                     {view === 'lobby' && (
                         <div className="card">
-                            <h3>¿Quién eres?</h3>
-                            <input placeholder="Tu nombre" value={playerName} onChange={e => setPlayerName(e.target.value)} />
+                            <h1>Nuestro Juego 💑</h1>
+                            <p style={{color:'#888'}}>Bienvenid@ a vuestra app privada</p>
                             
-                            <div style={{margin: '20px 0', borderTop: '1px solid #eee'}}></div>
-                            
+                            <label style={{display:'block', textAlign:'left', fontWeight:'bold', marginTop:20}}>Tu Nombre:</label>
+                            <input 
+                                value={playerName} 
+                                onChange={e => setPlayerName(e.target.value)} 
+                                placeholder="Ej: Bebé"
+                            />
+
+                            <div className="divider">CREAR</div>
                             <button onClick={createRoom}>Crear Sala Nueva</button>
-                            <p>- O -</p>
-                            <input id="codeInput" placeholder="CÓDIGO SALA" style={{textTransform:'uppercase'}} />
-                            <button className="btn-secondary" onClick={() => joinRoom(document.getElementById('codeInput').value)}>Unirse</button>
+
+                            <div className="divider">O UNIRSE</div>
+                            <input id="code-input" placeholder="CÓDIGO DE SALA" style={{textTransform:'uppercase', letterSpacing: 2}} />
+                            <button className="btn-secondary" onClick={() => joinRoom(document.getElementById('code-input').value)}>
+                                Entrar
+                            </button>
                         </div>
                     )}
 
                     {/* VISTA 2: ESPERANDO */}
                     {view === 'waiting' && (
-                        <div className="card">
-                            <p className="waiting">Esperando a tu pareja...</p>
-                            <div className="code-display">{roomId}</div>
-                            <p>Dile que ponga este código</p>
+                        <div className="card pulse">
+                            <h2>⏳ Esperando...</h2>
+                            <p>Dile que ponga este código en su móvil:</p>
+                            <div className="code-box">{roomId}</div>
+                            <p style={{fontSize: 12, color: '#888'}}>No cierres esta pantalla</p>
                         </div>
                     )}
 
-                    {/* VISTA 3: JUEGO (MENU) */}
+                    {/* VISTA 3: DENTRO DE LA SALA (Aquí irá el juego) */}
                     {view === 'game' && roomData && (
                         <div className="card">
-                            <div className="status">
-                                ✅ Conectados: <b>{roomData.players.host?.name}</b> y <b>{roomData.players.guest?.name || '...'}</b>
+                            <div className="status-badge">✅ CONECTADOS</div>
+                            <h3>Hola {playerName} 👋</h3>
+                            <p>Tu pareja es: <strong>{playerRole === 'host' ? roomData.players.guest?.name : roomData.players.host.name}</strong></p>
+                            
+                            <hr style={{borderColor: '#fce7f3', margin: '20px 0'}} />
+                            
+                            <p>¡Ya estáis sincronizados!</p>
+                            <div style={{background: '#fef3c7', padding: 15, borderRadius: 10, color: '#d97706'}}>
+                                🚧 <strong>Próximo paso:</strong><br/>
+                                Aquí cargará el juego de colores.
                             </div>
                             
-                            <h3>Elige Juego</h3>
-                            <button onClick={() => alert("Pronto: Colores")}>🎨 Colores (Coop)</button>
-                            <button onClick={() => alert("Pronto: Dial")}>🌊 Wavelength</button>
-                            <button onClick={() => alert("Pronto: Café")}>☕ Café o Té</button>
+                            <button onClick={() => alert("¡Pronto disponible!")} style={{opacity: 0.7}}>
+                                🎨 Empezar Colores
+                            </button>
                         </div>
                     )}
                 </div>
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
