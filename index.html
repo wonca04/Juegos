@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juegos Parejas Ultimate (Calibrado)</title>
+    <title>Juegos Parejas (Final Fix)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -31,7 +31,7 @@
         .btn-dial { background: linear-gradient(45deg, #4f46e5, #818cf8); }
 
         /* ============================
-           ESTILOS DIAL (CALIBRADO)
+           ESTILOS DIAL (SOLUCIÓN GRÁFICA)
            ============================ */
         .dial-main-container {
             position: relative;
@@ -40,7 +40,7 @@
             margin: 20px auto;
         }
 
-        /* MÁSCARA: Corta todo lo que se salga del semicírculo */
+        /* MÁSCARA */
         .dial-mask {
             width: 300px; height: 150px;
             overflow: hidden;
@@ -53,7 +53,7 @@
             z-index: 1;
         }
 
-        /* TRIÁNGULO DE PUNTOS (ROTADO) */
+        /* TRIÁNGULO DE PUNTOS (NUEVA LÓGICA SIN CORTES) */
         .target-wedge-wrapper {
             position: absolute; bottom: 0; left: 50%;
             width: 0; height: 0;
@@ -66,22 +66,23 @@
             border-radius: 50%;
             position: absolute;
             top: -150px; left: -150px; /* Centrado en el pivot */
-            /* Dibujamos las franjas apuntando hacia ARRIBA (0deg) y luego rotamos el wrapper */
-            /* Zonas ampliadas: Rosa +/- 8deg, Naranja +/- 18deg, Amarillo +/- 28deg */
+            
+            /* LÓGICA NUEVA: EMPIEZA EN -28 GRADOS (RESTA) Y SUMA. ASÍ NO SE CORTA. */
+            /* Amarillo: 10 grados ancho | Naranja: 10 grados ancho | Rosa: 16 grados ancho */
+            /* Total ancho: 28 izq + 28 der = 56 grados */
             background: conic-gradient(
-                from 0deg at 50% 50%,
-                transparent 332deg,        /* -28 deg start */
-                #facc15 332deg,            /* Amarillo start */
-                #facc15 342deg,            
-                #f97316 342deg,            /* Naranja start (-18) */
-                #f97316 352deg,
-                #be185d 352deg,            /* Rosa start (-8) */
-                #be185d 8deg,              /* Rosa end (+8) */
-                #f97316 8deg,              /* Naranja end */
-                #f97316 18deg,
-                #facc15 18deg,             /* Amarillo end (+18) */
-                #facc15 28deg,             /* Fin zona (+28) */
-                transparent 28deg
+                from -28deg at 50% 50%,
+                #facc15 0deg,             
+                #facc15 10deg,            
+                #f97316 10deg,            
+                #f97316 20deg,
+                #be185d 20deg,            
+                #be185d 36deg,            
+                #f97316 36deg,              
+                #f97316 46deg,
+                #facc15 46deg,             
+                #facc15 56deg,             
+                transparent 56deg
             );
         }
 
@@ -162,8 +163,10 @@
             const startTurn = () => {
                 const nextTurn = (!game.turn || game.turn === 'guest') ? 'host' : 'guest';
                 const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-                // Angulo entre 15 y 165 grados (para no estar pegado a los bordes)
-                const target = Math.floor(Math.random() * 150) + 15; 
+                
+                // ALEATORIEDAD CORREGIDA: Usa todo el rango (20 a 160 grados)
+                const target = Math.floor(Math.random() * 140) + 20; 
+                
                 db.ref(`salas/${roomId}/dialGame`).set({ turn: nextTurn, topic, targetAngle: target, needleAngle: 90, phase: 'HINTING', hint: '', score: 0 });
             };
 
@@ -172,13 +175,11 @@
             const moveNeedle = (val) => iAmGuesser && game.phase === 'GUESSING' && db.ref(`salas/${roomId}/dialGame`).update({ needleAngle: parseInt(val) });
             
             const confirmGuess = () => {
-                // Leer el valor ACTUAL del input para evitar errores de sincronización
+                // Leer el valor ACTUAL
                 const currentVal = parseInt(document.getElementById('dialInput').value);
                 
                 // ZONAS AMPLIADAS PARA QUE SEA MÁS FÁCIL
-                // Bullseye: +/- 8 grados (Antes era 4)
-                // 3 Puntos: +/- 18 grados (Antes era 12)
-                // 2 Puntos: +/- 28 grados (Antes era 22)
+                // Rosa: +/- 8 grados | Naranja: +/- 18 grados | Amarillo: +/- 28 grados
                 const diff = Math.abs(game.targetAngle - currentVal);
                 
                 let pts = 0;
@@ -186,13 +187,12 @@
                 else if (diff <= 18) pts = 3;
                 else if (diff <= 28) pts = 2;
                 
-                // Actualizamos DB con el valor final exacto
                 db.ref(`salas/${roomId}/dialGame`).update({ phase: 'RESULT', score: pts, needleAngle: currentVal });
             };
 
             if (!game.turn) return <div className="card"><h2>🌊 El Dial</h2><button onClick={startTurn}>EMPEZAR</button><br/><button onClick={onBack} style={{background:'#555'}}>MENÚ</button></div>;
 
-            // Rotaciones CSS (-90 para corregir que 0 es arriba y el dial empieza a la izq)
+            // Rotaciones CSS
             const needleRot = game.needleAngle - 90;
             const targetRot = game.targetAngle - 90; 
             const showZone = iAmPsychic || game.phase === 'RESULT';
@@ -209,7 +209,7 @@
 
                     <div className="dial-main-container">
                         <div className="dial-mask">
-                            {/* Rotamos el DIV ENTERO, así los colores siempre están alineados perfectos */}
+                            {/* EL TRIÁNGULO GIRA COMPLETO */}
                             <div className="target-wedge-wrapper" style={{ transform: `rotate(${targetRot}deg)`, opacity: showZone ? 1 : 0 }}>
                                 <div className="target-wedge-graphic"></div>
                             </div>
